@@ -31,11 +31,23 @@ public class SimpleJavaCompiler {
       Path sourceFilePath = tempDir.toPath().resolve(FACTORY_CLASS_NAME + ".java");
       writeToFile(sourceFilePath, sourceCode);
 
-      compileAndFailOnErrors(tempDir, "", sourceFilePath.toFile());
+      String classPath = createClassPath(tempDir);
+      compileAndFailOnErrors(tempDir, classPath, sourceFilePath.toFile());
       return createInstanceLoadedFromFile(tempDir, FACTORY_CLASS_NAME);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
+  }
+
+  private static String createClassPath(File tempDir) {
+    URLClassLoader classLoader = (URLClassLoader) SimpleJavaCompiler.class.getClassLoader();
+    StringBuilder stringBuilder = new StringBuilder();
+    stringBuilder.append(tempDir.toString());
+    for (URL url : classLoader.getURLs()) {
+      stringBuilder.append(File.pathSeparatorChar);
+      stringBuilder.append(url.getFile());
+    }
+    return stringBuilder.toString();
   }
 
   private static void check(boolean condition) {

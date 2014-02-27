@@ -1,16 +1,14 @@
 package com.perunlabs.deguicifier;
 
+import static com.perunlabs.deguicifier.Emits.emitNewInstanceFactory;
 import static java.util.Arrays.asList;
 import static java.util.Collections.unmodifiableSet;
 
-import java.io.IOException;
-import java.io.StringWriter;
-import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Logger;
 
-import javax.lang.model.element.Modifier;
+import javax.inject.Provider;
 
 import com.google.inject.Binding;
 import com.google.inject.Guice;
@@ -28,7 +26,6 @@ import com.google.inject.spi.ProviderBinding;
 import com.google.inject.spi.ProviderInstanceBinding;
 import com.google.inject.spi.ProviderKeyBinding;
 import com.google.inject.spi.UntargettedBinding;
-import com.squareup.javawriter.JavaWriter;
 
 public class Deguicifier {
   public static final String FACTORY_CLASS_NAME = "GeneratedFactory";
@@ -37,69 +34,70 @@ public class Deguicifier {
 
   public String deguicify(Module module) {
     Injector injector = Guice.createInjector(module);
+
+    StringBuilder builder = new StringBuilder();
+
+    builder.append("import " + Provider.class.getName() + ";\n");
+    builder.append("public class " + FACTORY_CLASS_NAME + " {\n");
+
     for (Binding<?> binding : injector.getAllBindings().values()) {
       if (!IGNORED_KEYS.contains(binding.getKey())) {
-        binding.acceptTargetVisitor(createBindingTargetVisitor());
+        builder.append(emit(binding));
       }
     }
 
-    try {
-      StringWriter stringWriter = new StringWriter();
-      JavaWriter javaWriter = new JavaWriter(stringWriter);
-      javaWriter.emitPackage("");
-      javaWriter.beginType(FACTORY_CLASS_NAME, "class", EnumSet.of(Modifier.PUBLIC));
-      javaWriter.endType();
-      javaWriter.close();
-      return stringWriter.toString();
-    } catch (IOException e) {
-      throw new Error(e);
-    }
+    builder.append("}\n");
+    return builder.toString();
   }
 
-  private BindingTargetVisitor<Object, Void> createBindingTargetVisitor() {
-    return new BindingTargetVisitor<Object, Void>() {
+  private static String emit(Binding<?> binding) {
+    return binding.acceptTargetVisitor(createBindingTargetVisitor());
+  }
+
+  private static BindingTargetVisitor<Object, String> createBindingTargetVisitor() {
+    return new BindingTargetVisitor<Object, String>() {
       @Override
-      public Void visit(InstanceBinding<? extends Object> binding) {
+      public String visit(InstanceBinding<? extends Object> binding) {
         throw new DeguicifierException();
       }
 
       @Override
-      public Void visit(ProviderInstanceBinding<? extends Object> binding) {
+      public String visit(ProviderInstanceBinding<? extends Object> binding) {
         throw new DeguicifierException();
       }
 
       @Override
-      public Void visit(ProviderKeyBinding<? extends Object> binding) {
+      public String visit(ProviderKeyBinding<? extends Object> binding) {
         throw new DeguicifierException();
       }
 
       @Override
-      public Void visit(LinkedKeyBinding<? extends Object> binding) {
+      public String visit(LinkedKeyBinding<? extends Object> binding) {
         throw new DeguicifierException();
       }
 
       @Override
-      public Void visit(ExposedBinding<? extends Object> binding) {
+      public String visit(ExposedBinding<? extends Object> binding) {
         throw new RuntimeException();
       }
 
       @Override
-      public Void visit(UntargettedBinding<? extends Object> binding) {
+      public String visit(UntargettedBinding<? extends Object> binding) {
         throw new RuntimeException();
       }
 
       @Override
-      public Void visit(ConstructorBinding<? extends Object> binding) {
-        throw new DeguicifierException();
+      public String visit(ConstructorBinding<? extends Object> binding) {
+        return emitNewInstanceFactory(binding.getKey().getTypeLiteral());
       }
 
       @Override
-      public Void visit(ConvertedConstantBinding<? extends Object> binding) {
+      public String visit(ConvertedConstantBinding<? extends Object> binding) {
         throw new RuntimeException();
       }
 
       @Override
-      public Void visit(ProviderBinding<? extends Object> binding) {
+      public String visit(ProviderBinding<? extends Object> binding) {
         throw new RuntimeException();
       }
     };

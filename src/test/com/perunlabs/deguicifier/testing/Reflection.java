@@ -2,7 +2,7 @@ package com.perunlabs.deguicifier.testing;
 
 import java.lang.reflect.InvocationTargetException;
 
-import com.google.inject.Provider;
+import javax.inject.Provider;
 
 public class Reflection {
   public static Object getInstance(Object factory) {
