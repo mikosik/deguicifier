@@ -3,9 +3,14 @@ package com.perunlabs.deguicifier;
 import static java.util.Arrays.asList;
 import static java.util.Collections.unmodifiableSet;
 
+import java.io.IOException;
+import java.io.StringWriter;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Logger;
+
+import javax.lang.model.element.Modifier;
 
 import com.google.inject.Binding;
 import com.google.inject.Guice;
@@ -23,6 +28,7 @@ import com.google.inject.spi.ProviderBinding;
 import com.google.inject.spi.ProviderInstanceBinding;
 import com.google.inject.spi.ProviderKeyBinding;
 import com.google.inject.spi.UntargettedBinding;
+import com.squareup.javawriter.JavaWriter;
 
 public class Deguicifier {
   public static final String FACTORY_CLASS_NAME = "GeneratedFactory";
@@ -36,7 +42,18 @@ public class Deguicifier {
         binding.acceptTargetVisitor(createBindingTargetVisitor());
       }
     }
-    return "public class " + FACTORY_CLASS_NAME + " {}";
+
+    try {
+      StringWriter stringWriter = new StringWriter();
+      JavaWriter javaWriter = new JavaWriter(stringWriter);
+      javaWriter.emitPackage("");
+      javaWriter.beginType(FACTORY_CLASS_NAME, "class", EnumSet.of(Modifier.PUBLIC));
+      javaWriter.endType();
+      javaWriter.close();
+      return stringWriter.toString();
+    } catch (IOException e) {
+      throw new Error(e);
+    }
   }
 
   private BindingTargetVisitor<Object, Void> createBindingTargetVisitor() {
