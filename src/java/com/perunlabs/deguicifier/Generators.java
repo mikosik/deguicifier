@@ -12,9 +12,10 @@ import com.google.inject.spi.Dependency;
 import com.google.inject.spi.LinkedKeyBinding;
 import com.google.inject.spi.ProviderKeyBinding;
 
-public class Emits {
+public class Generators {
   public static String generateGetter(ConstructorBinding<?> binding) {
-    return generateGetter(binding, generateConstructorInvocation(binding));
+    String statement = generateConstructorInvocation(binding);
+    return generateGetter(binding, statement);
   }
 
   private static String generateConstructorInvocation(ConstructorBinding<?> binding) {
@@ -34,11 +35,8 @@ public class Emits {
   }
 
   public static String generateGetter(LinkedKeyBinding<?> binding) {
-    return generateGetter(binding, generateDelegateCall(binding));
-  }
-
-  private static String generateDelegateCall(LinkedKeyBinding<?> binding) {
-    return getterSignature(binding.getLinkedKey().getTypeLiteral());
+    String statement = getterSignature(binding.getLinkedKey().getTypeLiteral());
+    return generateGetter(binding, statement);
   }
 
   public static String generateGetter(ProviderKeyBinding<?> binding) {

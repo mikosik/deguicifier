@@ -1,7 +1,7 @@
 package com.perunlabs.deguicifier;
 
-import static com.perunlabs.deguicifier.Emits.generateGetter;
-import static com.perunlabs.deguicifier.Emits.getterSignature;
+import static com.perunlabs.deguicifier.Generators.generateGetter;
+import static com.perunlabs.deguicifier.Generators.getterSignature;
 import static java.util.Arrays.asList;
 import static java.util.Collections.unmodifiableSet;
 
@@ -76,12 +76,12 @@ public class Deguicifier {
 
       @Override
       public String visit(ProviderKeyBinding<?> binding) {
-        return Emits.generateGetter(binding);
+        return generateGetter(binding);
       }
 
       @Override
       public String visit(LinkedKeyBinding<?> binding) {
-        return Emits.generateGetter(binding);
+        return generateGetter(binding);
       }
 
       @Override
