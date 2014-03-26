@@ -1,7 +1,7 @@
 package com.perunlabs.deguicifier;
 
-import static com.perunlabs.deguicifier.Emits.emitNewInstanceFactory;
-import static com.perunlabs.deguicifier.Emits.getMethodSignature;
+import static com.perunlabs.deguicifier.Emits.generateGetter;
+import static com.perunlabs.deguicifier.Emits.getterSignature;
 import static java.util.Arrays.asList;
 import static java.util.Collections.unmodifiableSet;
 
@@ -44,7 +44,7 @@ public class Deguicifier {
         + mainClass.getCanonicalName() + "> {\n");
 
     builder.append("public " + mainClass.getCanonicalName() + " get" + "() {\n");
-    builder.append("  return " + " " + getMethodSignature(TypeLiteral.get(mainClass)) + ";\n");
+    builder.append("  return " + " " + getterSignature(TypeLiteral.get(mainClass)) + ";\n");
     builder.append("}\n");
     builder.append("\n");
 
@@ -96,7 +96,7 @@ public class Deguicifier {
 
       @Override
       public String visit(ConstructorBinding<?> binding) {
-        return emitNewInstanceFactory(binding);
+        return generateGetter(binding);
       }
 
       @Override

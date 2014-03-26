@@ -5,22 +5,23 @@ import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
+import com.google.inject.Binding;
 import com.google.inject.TypeLiteral;
 import com.google.inject.spi.ConstructorBinding;
 import com.google.inject.spi.Dependency;
 
 public class Emits {
-  public static String emitNewInstanceFactory(ConstructorBinding<?> binding) {
-    return emitGetInstance(binding.getKey().getTypeLiteral(), emitNewInstance(binding));
+  public static String generateGetter(ConstructorBinding<?> binding) {
+    return generateGetter(binding, generateConstructorInvocation(binding));
   }
 
-  private static String emitNewInstance(ConstructorBinding<?> binding) {
+  private static String generateConstructorInvocation(ConstructorBinding<?> binding) {
     StringBuilder builder = new StringBuilder();
 
     builder.append("new " + canonicalName(binding.getKey().getTypeLiteral()) + "(\n");
     for (Dependency<?> dependency : binding.getDependencies()) {
       TypeLiteral<?> typeLiteral = dependency.getKey().getTypeLiteral();
-      builder.append(getMethodSignature(typeLiteral) + ",");
+      builder.append(getterSignature(typeLiteral) + ",");
     }
     if (0 < binding.getDependencies().size()) {
       builder.deleteCharAt(builder.length() - 1);
@@ -30,10 +31,11 @@ public class Emits {
     return builder.toString();
   }
 
-  public static String emitGetInstance(TypeLiteral<?> type, String instanceStatement) {
+  private static String generateGetter(Binding<?> binding, String statement) {
+    TypeLiteral<?> type = binding.getKey().getTypeLiteral();
     StringBuilder builder = new StringBuilder();
-    builder.append("private " + canonicalName(type) + " " + getMethodSignature(type) + " {\n");
-    builder.append("  return " + instanceStatement + ";\n");
+    builder.append("private " + canonicalName(type) + " " + getterSignature(type) + " {\n");
+    builder.append("  return " + statement + ";\n");
     builder.append("}\n");
     builder.append("\n");
     return builder.toString();
@@ -43,7 +45,7 @@ public class Emits {
     return typeLiteral.toString().replace('$', '.');
   }
 
-  public static String getMethodSignature(TypeLiteral<?> type) {
+  public static String getterSignature(TypeLiteral<?> type) {
     return "get" + uniqueNameFor(type) + "()";
   }
 
