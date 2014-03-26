@@ -37,19 +37,6 @@ public class UnsupportedBindingsTest {
   }
 
   @Test
-  public void linked_binding() throws Exception {
-    given(module = new AbstractModule() {
-      @Override
-      public void configure() {
-        bind(Interface.class).to(Implementation.class);
-      }
-    });
-
-    when(deguicifier).deguicify(module, Implementation.class);
-    thenThrown(DeguicifierException.class);
-  }
-
-  @Test
   public void provides_method_binding() throws Exception {
     given(module = new AbstractModule() {
       @Override

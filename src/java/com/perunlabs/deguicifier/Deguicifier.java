@@ -81,7 +81,7 @@ public class Deguicifier {
 
       @Override
       public String visit(LinkedKeyBinding<?> binding) {
-        throw new DeguicifierException();
+        return Emits.generateGetter(binding);
       }
 
       @Override

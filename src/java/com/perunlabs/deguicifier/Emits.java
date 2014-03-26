@@ -9,6 +9,7 @@ import com.google.inject.Binding;
 import com.google.inject.TypeLiteral;
 import com.google.inject.spi.ConstructorBinding;
 import com.google.inject.spi.Dependency;
+import com.google.inject.spi.LinkedKeyBinding;
 
 public class Emits {
   public static String generateGetter(ConstructorBinding<?> binding) {
@@ -29,6 +30,14 @@ public class Emits {
     builder.append(")");
 
     return builder.toString();
+  }
+
+  public static String generateGetter(LinkedKeyBinding<?> binding) {
+    return generateGetter(binding, generateDelegateCall(binding));
+  }
+
+  private static String generateDelegateCall(LinkedKeyBinding<?> binding) {
+    return getterSignature(binding.getLinkedKey().getTypeLiteral());
   }
 
   private static String generateGetter(Binding<?> binding, String statement) {
