@@ -1,6 +1,7 @@
 package com.perunlabs.deguicifier;
 
 import static com.perunlabs.deguicifier.Emits.emitNewInstanceFactory;
+import static com.perunlabs.deguicifier.Emits.uniqueNameFor;
 import static java.util.Arrays.asList;
 import static java.util.Collections.unmodifiableSet;
 
@@ -16,6 +17,7 @@ import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.google.inject.Module;
 import com.google.inject.Stage;
+import com.google.inject.TypeLiteral;
 import com.google.inject.spi.BindingTargetVisitor;
 import com.google.inject.spi.ConstructorBinding;
 import com.google.inject.spi.ConvertedConstantBinding;
@@ -40,6 +42,11 @@ public class Deguicifier {
     builder.append("import " + Provider.class.getName() + ";\n");
     builder.append("public class " + FACTORY_CLASS_NAME + " implements javax.inject.Provider<"
         + mainClass.getCanonicalName() + "> {\n");
+
+    builder.append("public " + mainClass.getCanonicalName() + " get" + "() {\n");
+    builder.append("  return " + " get" + uniqueNameFor(TypeLiteral.get(mainClass)) + "()" + ";\n");
+    builder.append("}\n");
+    builder.append("\n");
 
     for (Binding<?> binding : injector.getAllBindings().values()) {
       if (!IGNORED_KEYS.contains(binding.getKey())) {
@@ -89,7 +96,7 @@ public class Deguicifier {
 
       @Override
       public String visit(ConstructorBinding<? extends Object> binding) {
-        return emitNewInstanceFactory(binding.getKey().getTypeLiteral());
+        return emitNewInstanceFactory(binding);
       }
 
       @Override
