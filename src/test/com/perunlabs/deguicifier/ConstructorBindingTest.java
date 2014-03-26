@@ -1,6 +1,6 @@
 package com.perunlabs.deguicifier;
 
-import static com.perunlabs.deguicifier.testing.SimpleJavaCompiler.compiledInstance;
+import static com.perunlabs.deguicifier.testing.SimpleJavaCompiler.compileProvider;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.testory.Testory.given;
 import static org.testory.Testory.thenReturned;
@@ -11,24 +11,26 @@ import javax.inject.Provider;
 import org.junit.Test;
 
 import com.google.inject.AbstractModule;
+import com.google.inject.Module;
 
 public class ConstructorBindingTest {
   private Deguicifier deguicifier;
-  private String javaFile;
+  private Module module;
+  private Provider<?> provider;
 
   @Test
   public void generate_get_instance_for_constructor_binding() {
     given(deguicifier = new Deguicifier());
-    given(javaFile = deguicifier.deguicify(new AbstractModule() {
+    given(module = new AbstractModule() {
       @Override
       protected void configure() {
         bind(Implementation.class);
       }
-    }, Implementation.class));
-    when(((Provider<Implementation>) compiledInstance(javaFile)).get());
+    });
+    given(provider = compileProvider(deguicifier.deguicify(module, Implementation.class)));
+    when(provider.get());
     thenReturned(instanceOf(Implementation.class));
   }
 
   public static class Implementation {}
-
 }

@@ -14,6 +14,7 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.inject.Provider;
 import javax.tools.DiagnosticCollector;
 import javax.tools.DiagnosticListener;
 import javax.tools.JavaCompiler;
@@ -24,7 +25,7 @@ import javax.tools.ToolProvider;
 public class SimpleJavaCompiler {
   private static final Charset CHARSET = Charset.forName("UTF-8");
 
-  public static Object compiledInstance(String sourceCode) {
+  public static Provider<?> compileProvider(String sourceCode) {
     check(sourceCode != null);
     try {
       File tempDir = Files.createTempDirectory("deguicifier-test").toFile();
@@ -33,7 +34,7 @@ public class SimpleJavaCompiler {
 
       String classPath = createClassPath(tempDir);
       compileAndFailOnErrors(tempDir, classPath, sourceFilePath.toFile());
-      return createInstanceLoadedFromFile(tempDir, FACTORY_CLASS_NAME);
+      return (Provider<?>) createInstanceLoadedFromFile(tempDir, FACTORY_CLASS_NAME);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
