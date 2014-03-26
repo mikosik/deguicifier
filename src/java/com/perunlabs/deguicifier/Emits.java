@@ -17,10 +17,10 @@ public class Emits {
   private static String emitNewInstance(ConstructorBinding<?> binding) {
     StringBuilder builder = new StringBuilder();
 
-    builder.append("new " + print(binding.getKey().getTypeLiteral()) + "(\n");
+    builder.append("new " + canonicalName(binding.getKey().getTypeLiteral()) + "(\n");
     for (Dependency<?> dependency : binding.getDependencies()) {
       TypeLiteral<?> typeLiteral = dependency.getKey().getTypeLiteral();
-      builder.append("get" + uniqueNameFor(typeLiteral) + "(),");
+      builder.append(getMethodSignature(typeLiteral) + ",");
     }
     if (0 < binding.getDependencies().size()) {
       builder.deleteCharAt(builder.length() - 1);
@@ -31,20 +31,23 @@ public class Emits {
   }
 
   public static String emitGetInstance(TypeLiteral<?> type, String instanceStatement) {
-    String typeCode = print(type);
     StringBuilder builder = new StringBuilder();
-    builder.append("private " + typeCode + " get" + uniqueNameFor(type) + "() {\n");
+    builder.append("private " + canonicalName(type) + " " + getMethodSignature(type) + " {\n");
     builder.append("  return " + instanceStatement + ";\n");
     builder.append("}\n");
     builder.append("\n");
     return builder.toString();
   }
 
-  private static String print(TypeLiteral<?> typeLiteral) {
+  private static String canonicalName(TypeLiteral<?> typeLiteral) {
     return typeLiteral.toString().replace('$', '.');
   }
 
-  public static String uniqueNameFor(TypeLiteral<?> typeLiteral) {
+  public static String getMethodSignature(TypeLiteral<?> type) {
+    return "get" + uniqueNameFor(type) + "()";
+  }
+
+  private static String uniqueNameFor(TypeLiteral<?> typeLiteral) {
     try {
       byte[] stringBytes = typeLiteral.toString().getBytes(Charset.forName("UTF-8"));
       byte[] hash = MessageDigest.getInstance("SHA-1").digest(stringBytes);

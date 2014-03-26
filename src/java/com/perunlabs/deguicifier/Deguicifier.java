@@ -1,7 +1,7 @@
 package com.perunlabs.deguicifier;
 
 import static com.perunlabs.deguicifier.Emits.emitNewInstanceFactory;
-import static com.perunlabs.deguicifier.Emits.uniqueNameFor;
+import static com.perunlabs.deguicifier.Emits.getMethodSignature;
 import static java.util.Arrays.asList;
 import static java.util.Collections.unmodifiableSet;
 
@@ -44,7 +44,7 @@ public class Deguicifier {
         + mainClass.getCanonicalName() + "> {\n");
 
     builder.append("public " + mainClass.getCanonicalName() + " get" + "() {\n");
-    builder.append("  return " + " get" + uniqueNameFor(TypeLiteral.get(mainClass)) + "()" + ";\n");
+    builder.append("  return " + " " + getMethodSignature(TypeLiteral.get(mainClass)) + ";\n");
     builder.append("}\n");
     builder.append("\n");
 
@@ -65,47 +65,47 @@ public class Deguicifier {
   private static BindingTargetVisitor<Object, String> createBindingTargetVisitor() {
     return new BindingTargetVisitor<Object, String>() {
       @Override
-      public String visit(InstanceBinding<? extends Object> binding) {
+      public String visit(InstanceBinding<?> binding) {
         throw new DeguicifierException();
       }
 
       @Override
-      public String visit(ProviderInstanceBinding<? extends Object> binding) {
+      public String visit(ProviderInstanceBinding<?> binding) {
         throw new DeguicifierException();
       }
 
       @Override
-      public String visit(ProviderKeyBinding<? extends Object> binding) {
+      public String visit(ProviderKeyBinding<?> binding) {
         throw new DeguicifierException();
       }
 
       @Override
-      public String visit(LinkedKeyBinding<? extends Object> binding) {
+      public String visit(LinkedKeyBinding<?> binding) {
         throw new DeguicifierException();
       }
 
       @Override
-      public String visit(ExposedBinding<? extends Object> binding) {
+      public String visit(ExposedBinding<?> binding) {
         throw new RuntimeException();
       }
 
       @Override
-      public String visit(UntargettedBinding<? extends Object> binding) {
+      public String visit(UntargettedBinding<?> binding) {
         throw new RuntimeException();
       }
 
       @Override
-      public String visit(ConstructorBinding<? extends Object> binding) {
+      public String visit(ConstructorBinding<?> binding) {
         return emitNewInstanceFactory(binding);
       }
 
       @Override
-      public String visit(ConvertedConstantBinding<? extends Object> binding) {
+      public String visit(ConvertedConstantBinding<?> binding) {
         throw new RuntimeException();
       }
 
       @Override
-      public String visit(ProviderBinding<? extends Object> binding) {
+      public String visit(ProviderBinding<?> binding) {
         throw new RuntimeException();
       }
     };
