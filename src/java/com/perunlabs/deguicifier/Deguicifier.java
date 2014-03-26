@@ -106,7 +106,7 @@ public class Deguicifier {
 
       @Override
       public String visit(ProviderBinding<?> binding) {
-        throw new RuntimeException();
+        return generateGetter(binding);
       }
     };
   }

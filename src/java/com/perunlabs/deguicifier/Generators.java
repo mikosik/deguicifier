@@ -10,6 +10,7 @@ import com.google.inject.TypeLiteral;
 import com.google.inject.spi.ConstructorBinding;
 import com.google.inject.spi.Dependency;
 import com.google.inject.spi.LinkedKeyBinding;
+import com.google.inject.spi.ProviderBinding;
 import com.google.inject.spi.ProviderKeyBinding;
 
 public class Generators {
@@ -44,6 +45,21 @@ public class Generators {
     return generateGetter(binding, statement);
   }
 
+  public static String generateGetter(ProviderBinding<?> binding) {
+    TypeLiteral<?> provider = binding.getKey().getTypeLiteral();
+    TypeLiteral<?> provided = binding.getProvidedKey().getTypeLiteral();
+
+    StringBuilder builder = new StringBuilder();
+    builder.append("new " + canonicalName(provider) + "() {\n");
+    builder.append("  public " + canonicalName(provided) + " get() {\n");
+    builder.append("    return " + getterSignature(provided) + "\n;");
+    builder.append("  }\n");
+    builder.append("}");
+    String statement = builder.toString();
+
+    return generateGetter(binding, statement);
+  }
+
   private static String generateGetter(Binding<?> binding, String statement) {
     TypeLiteral<?> type = binding.getKey().getTypeLiteral();
     StringBuilder builder = new StringBuilder();
@@ -54,21 +70,21 @@ public class Generators {
     return builder.toString();
   }
 
-  private static String canonicalName(TypeLiteral<?> typeLiteral) {
-    return typeLiteral.toString().replace('$', '.');
-  }
-
   public static String getterSignature(TypeLiteral<?> type) {
     return "get" + uniqueNameFor(type) + "()";
   }
 
   private static String uniqueNameFor(TypeLiteral<?> typeLiteral) {
     try {
-      byte[] stringBytes = typeLiteral.toString().getBytes(Charset.forName("UTF-8"));
+      byte[] stringBytes = canonicalName(typeLiteral).getBytes(Charset.forName("UTF-8"));
       byte[] hash = MessageDigest.getInstance("SHA-1").digest(stringBytes);
       return new BigInteger(1, hash).toString(16);
     } catch (NoSuchAlgorithmException e) {
       throw new DeguicifierException(e);
     }
+  }
+
+  private static String canonicalName(TypeLiteral<?> typeLiteral) {
+    return typeLiteral.toString().replace('$', '.');
   }
 }
