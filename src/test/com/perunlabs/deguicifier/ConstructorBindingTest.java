@@ -1,10 +1,8 @@
 package com.perunlabs.deguicifier;
 
 import static com.perunlabs.deguicifier.testing.Reflection.getInstance;
-import static com.perunlabs.deguicifier.testing.Reflection.getProvider;
 import static com.perunlabs.deguicifier.testing.SimpleJavaCompiler.compiledInstance;
 import static org.hamcrest.Matchers.instanceOf;
-import static org.hamcrest.Matchers.isA;
 import static org.testory.Testory.given;
 import static org.testory.Testory.thenReturned;
 import static org.testory.Testory.when;
@@ -28,19 +26,6 @@ public class ConstructorBindingTest {
     }));
     when(getInstance(compiledInstance(javaFile)));
     thenReturned(instanceOf(Implementation.class));
-  }
-
-  @Test
-  public void generate_get_provider_for_constructor_binding() {
-    given(deguicifier = new Deguicifier());
-    given(javaFile = deguicifier.deguicify(new AbstractModule() {
-      @Override
-      protected void configure() {
-        bind(Implementation.class);
-      }
-    }));
-    when(getProvider(compiledInstance(javaFile)).get());
-    thenReturned(isA(Implementation.class));
   }
 
   public static class Implementation {}
