@@ -10,6 +10,7 @@ import com.google.inject.TypeLiteral;
 import com.google.inject.spi.ConstructorBinding;
 import com.google.inject.spi.Dependency;
 import com.google.inject.spi.LinkedKeyBinding;
+import com.google.inject.spi.ProviderKeyBinding;
 
 public class Emits {
   public static String generateGetter(ConstructorBinding<?> binding) {
@@ -38,6 +39,11 @@ public class Emits {
 
   private static String generateDelegateCall(LinkedKeyBinding<?> binding) {
     return getterSignature(binding.getLinkedKey().getTypeLiteral());
+  }
+
+  public static String generateGetter(ProviderKeyBinding<?> binding) {
+    String statement = getterSignature(binding.getProviderKey().getTypeLiteral()) + ".get()";
+    return generateGetter(binding, statement);
   }
 
   private static String generateGetter(Binding<?> binding, String statement) {

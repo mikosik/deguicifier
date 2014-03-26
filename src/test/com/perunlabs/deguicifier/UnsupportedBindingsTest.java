@@ -65,19 +65,6 @@ public class UnsupportedBindingsTest {
     thenThrown(DeguicifierException.class);
   }
 
-  @Test
-  public void provider_key_binding() throws Exception {
-    given(module = new AbstractModule() {
-      @Override
-      public void configure() {
-        bind(Implementation.class).toProvider(ImplementationProvider.class);
-      }
-    });
-
-    when(deguicifier).deguicify(module, Implementation.class);
-    thenThrown(DeguicifierException.class);
-  }
-
   public static interface Interface {}
 
   public static class Implementation implements Interface {}

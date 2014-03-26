@@ -76,7 +76,7 @@ public class Deguicifier {
 
       @Override
       public String visit(ProviderKeyBinding<?> binding) {
-        throw new DeguicifierException();
+        return Emits.generateGetter(binding);
       }
 
       @Override
