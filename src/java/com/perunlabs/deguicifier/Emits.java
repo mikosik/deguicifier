@@ -16,7 +16,7 @@ public class Emits {
   public static String emitGetInstance(TypeLiteral<?> type, String instanceStatement) {
     String typeCode = print(type);
     StringBuilder builder = new StringBuilder();
-    builder.append("public static " + typeCode + " getInstance() {\n");
+    builder.append("public " + typeCode + " get() {\n");
     builder.append("  return " + instanceStatement + ";\n");
     builder.append("}\n");
     builder.append("\n");

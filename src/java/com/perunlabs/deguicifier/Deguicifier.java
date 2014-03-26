@@ -32,13 +32,14 @@ public class Deguicifier {
   private static final Set<Key<?>> IGNORED_KEYS = immutableSet(Key.get(Injector.class), Key
       .get(Logger.class), Key.get(Stage.class));
 
-  public String deguicify(Module module) {
+  public String deguicify(Module module, Class<?> mainClass) {
     Injector injector = Guice.createInjector(module);
 
     StringBuilder builder = new StringBuilder();
 
     builder.append("import " + Provider.class.getName() + ";\n");
-    builder.append("public class " + FACTORY_CLASS_NAME + " {\n");
+    builder.append("public class " + FACTORY_CLASS_NAME + " implements javax.inject.Provider<"
+        + mainClass.getCanonicalName() + "> {\n");
 
     for (Binding<?> binding : injector.getAllBindings().values()) {
       if (!IGNORED_KEYS.contains(binding.getKey())) {

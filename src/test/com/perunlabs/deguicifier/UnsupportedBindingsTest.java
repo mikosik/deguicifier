@@ -32,7 +32,7 @@ public class UnsupportedBindingsTest {
       }
     });
 
-    when(deguicifier).deguicify(module);
+    when(deguicifier).deguicify(module, Implementation.class);
     thenThrown(DeguicifierException.class);
   }
 
@@ -45,7 +45,7 @@ public class UnsupportedBindingsTest {
       }
     });
 
-    when(deguicifier).deguicify(module);
+    when(deguicifier).deguicify(module, Implementation.class);
     thenThrown(DeguicifierException.class);
   }
 
@@ -61,7 +61,7 @@ public class UnsupportedBindingsTest {
       }
     });
 
-    when(deguicifier).deguicify(module);
+    when(deguicifier).deguicify(module, Implementation.class);
     thenThrown(DeguicifierException.class);
   }
 
@@ -74,7 +74,7 @@ public class UnsupportedBindingsTest {
       }
     });
 
-    when(deguicifier).deguicify(module);
+    when(deguicifier).deguicify(module, Implementation.class);
     thenThrown(DeguicifierException.class);
   }
 
@@ -87,7 +87,7 @@ public class UnsupportedBindingsTest {
       }
     });
 
-    when(deguicifier).deguicify(module);
+    when(deguicifier).deguicify(module, Implementation.class);
     thenThrown(DeguicifierException.class);
   }
 
