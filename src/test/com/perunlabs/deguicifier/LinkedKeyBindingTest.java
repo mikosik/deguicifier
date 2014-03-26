@@ -13,7 +13,7 @@ import org.junit.Test;
 import com.google.inject.AbstractModule;
 import com.google.inject.Module;
 
-public class LinkedBindingTest {
+public class LinkedKeyBindingTest {
   private Deguicifier deguicifier;
   private Module module;
   private Provider<?> provider;
