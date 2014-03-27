@@ -16,7 +16,6 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Module;
 import com.google.inject.Provides;
 import com.google.inject.util.Providers;
-import com.perunlabs.deguicifier.UnsupportedBindingsTest.Implementation;
 
 public class ProviderInstanceBindingTest {
   private Deguicifier deguicifier;
@@ -80,7 +79,7 @@ public class ProviderInstanceBindingTest {
       }
     });
 
-    when(deguicifier).deguicify(module, Implementation.class);
+    when(deguicifier).deguicify(module, CharSequence.class);
     thenThrown(DeguicifierException.class);
   }
 
