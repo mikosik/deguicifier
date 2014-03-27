@@ -83,4 +83,73 @@ public class ProviderInstanceBindingTest {
     when(deguicifier).deguicify(module, Implementation.class);
     thenThrown(DeguicifierException.class);
   }
+
+  @Test
+  public void module_cannot_be_anonymous_class() {
+    given(module = new AbstractModule() {
+      @Override
+      public void configure() {}
+
+      @Provides
+      public String providesString() {
+        return string;
+      }
+    });
+    when(deguicifier).deguicify(module, String.class);
+    thenThrown(DeguicifierException.class);
+  }
+
+  @Test
+  public void module_cannot_be_inner_class() {
+    class MyModule extends AbstractModule {
+      @Override
+      public void configure() {}
+
+      @Provides
+      public String providesString() {
+        return string;
+      }
+    }
+    given(module = new MyModule());
+    when(deguicifier).deguicify(module, String.class);
+    thenThrown(DeguicifierException.class);
+  }
+
+  @Test
+  public void module_must_have_default_constructor() {
+    given(module = new ModuleWithoutDefaultConstructor(null));
+    when(deguicifier).deguicify(module, String.class);
+    thenThrown(DeguicifierException.class);
+  }
+
+  public static class ModuleWithoutDefaultConstructor extends AbstractModule {
+    public ModuleWithoutDefaultConstructor(Object object) {}
+
+    @Override
+    public void configure() {}
+
+    @Provides
+    public String providesString() {
+      return string;
+    }
+  }
+
+  @Test
+  public void module_must_have_public_default_constructor() {
+    given(module = new ModuleWithPrivateDefaultConstructor());
+    when(deguicifier).deguicify(module, String.class);
+    thenThrown(DeguicifierException.class);
+  }
+
+  public static class ModuleWithPrivateDefaultConstructor extends AbstractModule {
+    private ModuleWithPrivateDefaultConstructor() {}
+
+    @Override
+    public void configure() {}
+
+    @Provides
+    public String providesString() {
+      return string;
+    }
+  }
 }

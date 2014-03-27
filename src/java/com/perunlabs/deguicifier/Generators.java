@@ -72,8 +72,17 @@ public class Generators {
   public static String generateGetter(ProviderInstanceBinding<?> binding) {
     if (binding.getProviderInstance() instanceof ProviderMethod<?>) {
       Method method = ((ProviderMethod<?>) binding.getProviderInstance()).getMethod();
+      Class<?> declaringClass = method.getDeclaringClass();
+      if (declaringClass.isLocalClass()) {
+        throw new DeguicifierException();
+      }
+      try {
+        declaringClass.getConstructor();
+      } catch (NoSuchMethodException e) {
+        throw new DeguicifierException(e);
+      }
       String statement =
-          "new " + method.getDeclaringClass().getCanonicalName() + "()." + method.getName() + "("
+          "new " + declaringClass.getCanonicalName() + "()." + method.getName() + "("
               + generateArgumentList(binding) + ")";
       return generateGetter(binding, statement);
     }
