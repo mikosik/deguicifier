@@ -4,6 +4,7 @@ import static com.perunlabs.deguicifier.testing.SimpleJavaCompiler.compileProvid
 import static org.testory.Testory.given;
 import static org.testory.Testory.givenTest;
 import static org.testory.Testory.thenReturned;
+import static org.testory.Testory.thenThrown;
 import static org.testory.Testory.when;
 
 import javax.inject.Provider;
@@ -14,6 +15,8 @@ import org.junit.Test;
 import com.google.inject.AbstractModule;
 import com.google.inject.Module;
 import com.google.inject.Provides;
+import com.google.inject.util.Providers;
+import com.perunlabs.deguicifier.UnsupportedBindingsTest.Implementation;
 
 public class ProviderInstanceBindingTest {
   private Deguicifier deguicifier;
@@ -66,5 +69,18 @@ public class ProviderInstanceBindingTest {
     public CharSequence providesCharSequence(String injectedString) {
       return injectedString;
     }
+  }
+
+  @Test
+  public void does_not_bind_to_provider_instance() throws Exception {
+    given(module = new AbstractModule() {
+      @Override
+      public void configure() {
+        bind(CharSequence.class).toProvider(Providers.of(string));
+      }
+    });
+
+    when(deguicifier).deguicify(module, Implementation.class);
+    thenThrown(DeguicifierException.class);
   }
 }
