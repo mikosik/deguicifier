@@ -20,7 +20,7 @@ public class ConstructorBindingTest {
   private Provider<?> provider;
 
   @Test
-  public void implicit_default_constructor_binding() {
+  public void binds_default_constructor() {
     given(deguicifier = new Deguicifier());
     given(module = new AbstractModule() {
       @Override
@@ -36,7 +36,7 @@ public class ConstructorBindingTest {
   public static class Implementation {}
 
   @Test
-  public void explicit_default_constructor_binding() {
+  public void binds_no_arg_constructor() {
     given(deguicifier = new Deguicifier());
     given(module = new AbstractModule() {
       @Override
@@ -55,7 +55,7 @@ public class ConstructorBindingTest {
   }
 
   @Test
-  public void injected_constructor_binding() {
+  public void binds_parameterized_constructor() {
     given(deguicifier = new Deguicifier());
     given(module = new AbstractModule() {
       @Override

@@ -19,7 +19,7 @@ public class ProviderKeyBindingTest {
   private Provider<?> provider;
 
   @Test
-  public void implicit_default_constructor_binding() {
+  public void binds_to_provider() {
     given(deguicifier = new Deguicifier());
     given(module = new AbstractModule() {
       @Override

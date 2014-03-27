@@ -19,7 +19,7 @@ public class LinkedKeyBindingTest {
   private Provider<?> provider;
 
   @Test
-  public void implicit_default_constructor_binding() {
+  public void binds_interface_to_implementation() {
     given(deguicifier = new Deguicifier());
     given(module = new AbstractModule() {
       @Override

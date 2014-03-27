@@ -20,7 +20,7 @@ public class ProviderBindingTest {
   private Provider<?> provider;
 
   @Test
-  public void implicit_default_constructor_binding() {
+  public void injects_provider() {
     given(deguicifier = new Deguicifier());
     given(module = new AbstractModule() {
       @Override
