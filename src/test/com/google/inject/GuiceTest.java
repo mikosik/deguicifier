@@ -52,4 +52,17 @@ public class GuiceTest {
       return com.google.inject.Guice.createInjector(modules);
     }
   }
+
+  @Test
+  public void provider_of_provider_can_be_injected() throws Exception {
+    given(injector = guice.createInjector(new AbstractModule() {
+      @Override
+      protected void configure() {
+        bind(Integer.class).toInstance(Integer.valueOf(3));
+      }
+    }));
+    when(injector.getInstance(Key.get(new TypeLiteral<Provider<Provider<Integer>>>() {})).get()
+        .get());
+    thenReturned(3);
+  }
 }
