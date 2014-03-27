@@ -11,6 +11,7 @@ import java.util.logging.Logger;
 
 import javax.inject.Provider;
 
+import com.google.inject.AbstractModule;
 import com.google.inject.Binding;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -34,8 +35,13 @@ public class Deguicifier {
   private static final Set<Key<?>> IGNORED_KEYS = immutableSet(Key.get(Injector.class), Key
       .get(Logger.class), Key.get(Stage.class));
 
-  public String deguicify(Module module, Class<?> mainClass) {
-    Injector injector = Guice.createInjector(module);
+  public String deguicify(Module module, final Class<?> mainClass) {
+    Injector injector = Guice.createInjector(module, new AbstractModule() {
+      @Override
+      protected void configure() {
+        requireBinding(mainClass);
+      }
+    });
 
     StringBuilder builder = new StringBuilder();
 
