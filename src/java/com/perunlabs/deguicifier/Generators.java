@@ -85,6 +85,13 @@ public class Generators {
   }
 
   private static String canonicalName(TypeLiteral<?> typeLiteral) {
-    return typeLiteral.toString().replace('$', '.');
+    String result = typeLiteral.toString().replace('$', '.');
+    if (typeLiteral.getRawType().equals(com.google.inject.Provider.class)) {
+      String googleProvider = com.google.inject.Provider.class.getCanonicalName();
+      String javaxProvider = javax.inject.Provider.class.getCanonicalName();
+      return javaxProvider + result.substring(googleProvider.length());
+    } else {
+      return result;
+    }
   }
 }
