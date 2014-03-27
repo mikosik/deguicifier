@@ -66,7 +66,7 @@ public class Deguicifier {
     return new BindingTargetVisitor<Object, String>() {
       @Override
       public String visit(InstanceBinding<?> binding) {
-        throw new DeguicifierException();
+        return generateGetter(binding);
       }
 
       @Override

@@ -12,6 +12,7 @@ import com.google.inject.internal.ProviderMethod;
 import com.google.inject.spi.ConstructorBinding;
 import com.google.inject.spi.Dependency;
 import com.google.inject.spi.HasDependencies;
+import com.google.inject.spi.InstanceBinding;
 import com.google.inject.spi.LinkedKeyBinding;
 import com.google.inject.spi.ProviderBinding;
 import com.google.inject.spi.ProviderInstanceBinding;
@@ -87,6 +88,36 @@ public class Generators {
       return generateGetter(binding, statement);
     }
     throw new DeguicifierException();
+  }
+
+  public static String generateGetter(InstanceBinding<?> binding) {
+    Object instance = binding.getInstance();
+    if (instance instanceof Boolean) {
+      return generateGetter(binding, instance.toString());
+    } else if (instance instanceof Character) {
+      return generateGetter(binding, "'" + instance.toString() + "'");
+    } else if (instance instanceof Byte) {
+      return generateGetter(binding, instance.toString());
+    } else if (instance instanceof Short) {
+      return generateGetter(binding, instance.toString());
+    } else if (instance instanceof Integer) {
+      return generateGetter(binding, instance.toString());
+    } else if (instance instanceof Long) {
+      return generateGetter(binding, instance.toString() + "L");
+    } else if (instance instanceof Float) {
+      return generateGetter(binding, instance.toString() + "f");
+    } else if (instance instanceof Double) {
+      return generateGetter(binding, instance.toString() + "d");
+    } else if (instance instanceof String) {
+      return generateGetter(binding, "\"" + escape(instance.toString()) + "\"");
+    } else {
+      throw new DeguicifierException();
+    }
+  }
+
+  private static String escape(String string) {
+    return string.replace("\\", "\\\\").replace("\"", "\\\"").replace("\t", "\\t")
+        .replace("\r", "\\r").replace("\n", "\\n").replace("\b", "\\b").replace("\f", "\\f");
   }
 
   private static String generateGetter(Binding<?> binding, String statement) {
