@@ -11,6 +11,7 @@ import com.google.inject.TypeLiteral;
 import com.google.inject.internal.ProviderMethod;
 import com.google.inject.spi.ConstructorBinding;
 import com.google.inject.spi.Dependency;
+import com.google.inject.spi.HasDependencies;
 import com.google.inject.spi.LinkedKeyBinding;
 import com.google.inject.spi.ProviderBinding;
 import com.google.inject.spi.ProviderInstanceBinding;
@@ -26,6 +27,13 @@ public class Generators {
     StringBuilder builder = new StringBuilder();
 
     builder.append("new " + canonicalName(binding.getKey().getTypeLiteral()) + "(\n");
+    builder.append(generateArgumentList(binding));
+    builder.append(")");
+    return builder.toString();
+  }
+
+  private static String generateArgumentList(HasDependencies binding) {
+    StringBuilder builder = new StringBuilder();
     for (Dependency<?> dependency : binding.getDependencies()) {
       TypeLiteral<?> typeLiteral = dependency.getKey().getTypeLiteral();
       builder.append(getterSignature(typeLiteral) + ",");
@@ -33,8 +41,6 @@ public class Generators {
     if (0 < binding.getDependencies().size()) {
       builder.deleteCharAt(builder.length() - 1);
     }
-    builder.append(")");
-
     return builder.toString();
   }
 
@@ -67,7 +73,8 @@ public class Generators {
     if (binding.getProviderInstance() instanceof ProviderMethod<?>) {
       Method method = ((ProviderMethod<?>) binding.getProviderInstance()).getMethod();
       String statement =
-          "new " + method.getDeclaringClass().getCanonicalName() + "()." + method.getName() + "()";
+          "new " + method.getDeclaringClass().getCanonicalName() + "()." + method.getName() + "("
+              + generateArgumentList(binding) + ")";
       return generateGetter(binding, statement);
     }
     throw new DeguicifierException();

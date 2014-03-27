@@ -19,7 +19,7 @@ public class ProviderInstanceBindingTest {
   private Deguicifier deguicifier;
   private Module module;
   private Provider<?> provider;
-  private static CharSequence string = "string";
+  private static String string = "string";
 
   @Before
   public void before() {
@@ -28,14 +28,14 @@ public class ProviderInstanceBindingTest {
   }
 
   @Test
-  public void binds_provides_method() {
-    given(module = new MyModule());
+  public void binds_provides_method_with_no_arguments() {
+    given(module = new ProvidesWithoutArgumentsModule());
     given(provider = compileProvider(deguicifier.deguicify(module, CharSequence.class)));
     when(provider.get());
     thenReturned(string);
   }
 
-  public static class MyModule extends AbstractModule {
+  public static class ProvidesWithoutArgumentsModule extends AbstractModule {
     @Override
     protected void configure() {}
 
@@ -45,10 +45,26 @@ public class ProviderInstanceBindingTest {
     }
   }
 
-  public static class Implementation {}
-
   @Test
-  public void does_not_bind_to_provider_instance() {
+  public void binds_provides_method_with_arguments() {
+    given(module = new ProvidesWithArgumentsModule());
+    given(provider = compileProvider(deguicifier.deguicify(module, CharSequence.class)));
+    when(provider.get());
+    thenReturned(string);
+  }
 
+  public static class ProvidesWithArgumentsModule extends AbstractModule {
+    @Override
+    protected void configure() {}
+
+    @Provides
+    public String providesString() {
+      return string;
+    }
+
+    @Provides
+    public CharSequence providesCharSequence(String injectedString) {
+      return injectedString;
+    }
   }
 }
