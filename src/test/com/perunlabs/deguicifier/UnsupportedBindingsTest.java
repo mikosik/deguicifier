@@ -11,7 +11,6 @@ import org.junit.Test;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Module;
-import com.google.inject.Provides;
 import com.google.inject.util.Providers;
 
 public class UnsupportedBindingsTest {
@@ -29,22 +28,6 @@ public class UnsupportedBindingsTest {
       @Override
       public void configure() {
         bind(Implementation.class).toInstance(new Implementation());
-      }
-    });
-
-    when(deguicifier).deguicify(module, Implementation.class);
-    thenThrown(DeguicifierException.class);
-  }
-
-  @Test
-  public void provides_method_binding() throws Exception {
-    given(module = new AbstractModule() {
-      @Override
-      public void configure() {}
-
-      @Provides
-      public Implementation provideImplementation() {
-        return new Implementation();
       }
     });
 

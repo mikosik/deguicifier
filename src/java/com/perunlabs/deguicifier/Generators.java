@@ -1,5 +1,6 @@
 package com.perunlabs.deguicifier;
 
+import java.lang.reflect.Method;
 import java.math.BigInteger;
 import java.nio.charset.Charset;
 import java.security.MessageDigest;
@@ -7,10 +8,12 @@ import java.security.NoSuchAlgorithmException;
 
 import com.google.inject.Binding;
 import com.google.inject.TypeLiteral;
+import com.google.inject.internal.ProviderMethod;
 import com.google.inject.spi.ConstructorBinding;
 import com.google.inject.spi.Dependency;
 import com.google.inject.spi.LinkedKeyBinding;
 import com.google.inject.spi.ProviderBinding;
+import com.google.inject.spi.ProviderInstanceBinding;
 import com.google.inject.spi.ProviderKeyBinding;
 
 public class Generators {
@@ -58,6 +61,16 @@ public class Generators {
     String statement = builder.toString();
 
     return generateGetter(binding, statement);
+  }
+
+  public static String generateGetter(ProviderInstanceBinding<?> binding) {
+    if (binding.getProviderInstance() instanceof ProviderMethod<?>) {
+      Method method = ((ProviderMethod<?>) binding.getProviderInstance()).getMethod();
+      String statement =
+          "new " + method.getDeclaringClass().getCanonicalName() + "()." + method.getName() + "()";
+      return generateGetter(binding, statement);
+    }
+    throw new DeguicifierException();
   }
 
   private static String generateGetter(Binding<?> binding, String statement) {
