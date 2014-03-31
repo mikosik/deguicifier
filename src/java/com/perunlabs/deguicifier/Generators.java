@@ -137,9 +137,9 @@ public class Generators {
   }
 
   private static String uniqueNameFor(Key<?> key) {
-    TypeLiteral<?> typeLiteral = key.getTypeLiteral();
     try {
-      String string = canonicalName(typeLiteral) + "#" + key.getAnnotationType();
+      Object annotationObject = key.hasAttributes() ? key.getAnnotation() : key.getAnnotationType();
+      String string = canonicalName(key.getTypeLiteral()) + "#" + String.valueOf(annotationObject);
       byte[] stringBytes = string.getBytes(Charset.forName("UTF-8"));
       byte[] hash = MessageDigest.getInstance("SHA-1").digest(stringBytes);
       return new BigInteger(1, hash).toString(16);
