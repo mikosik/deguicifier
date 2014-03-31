@@ -7,6 +7,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 import com.google.inject.Binding;
+import com.google.inject.Key;
 import com.google.inject.TypeLiteral;
 import com.google.inject.internal.ProviderMethod;
 import com.google.inject.spi.ConstructorBinding;
@@ -36,8 +37,7 @@ public class Generators {
   private static String generateArgumentList(HasDependencies binding) {
     StringBuilder builder = new StringBuilder();
     for (Dependency<?> dependency : binding.getDependencies()) {
-      TypeLiteral<?> typeLiteral = dependency.getKey().getTypeLiteral();
-      builder.append(getterSignature(typeLiteral) + ",");
+      builder.append(getterSignature(dependency.getKey()) + ",");
     }
     if (0 < binding.getDependencies().size()) {
       builder.deleteCharAt(builder.length() - 1);
@@ -46,23 +46,24 @@ public class Generators {
   }
 
   public static String generateGetter(LinkedKeyBinding<?> binding) {
-    String statement = getterSignature(binding.getLinkedKey().getTypeLiteral());
+    String statement = getterSignature(binding.getLinkedKey());
     return generateGetter(binding, statement);
   }
 
   public static String generateGetter(ProviderKeyBinding<?> binding) {
-    String statement = getterSignature(binding.getProviderKey().getTypeLiteral()) + ".get()";
+    String statement = getterSignature(binding.getProviderKey()) + ".get()";
     return generateGetter(binding, statement);
   }
 
   public static String generateGetter(ProviderBinding<?> binding) {
+    Key<?> providedKey = binding.getProvidedKey();
+    TypeLiteral<?> provided = providedKey.getTypeLiteral();
     TypeLiteral<?> provider = binding.getKey().getTypeLiteral();
-    TypeLiteral<?> provided = binding.getProvidedKey().getTypeLiteral();
 
     StringBuilder builder = new StringBuilder();
     builder.append("new " + canonicalName(provider) + "() {\n");
     builder.append("  public " + canonicalName(provided) + " get() {\n");
-    builder.append("    return " + getterSignature(provided) + "\n;");
+    builder.append("    return " + getterSignature(providedKey) + "\n;");
     builder.append("  }\n");
     builder.append("}");
     String statement = builder.toString();
@@ -116,27 +117,30 @@ public class Generators {
   }
 
   private static String escape(String string) {
-    return string.replace("\\", "\\\\").replace("\"", "\\\"").replace("\t", "\\t")
-        .replace("\r", "\\r").replace("\n", "\\n").replace("\b", "\\b").replace("\f", "\\f");
+    return string.replace("\\", "\\\\").replace("\"", "\\\"").replace("\t", "\\t").replace("\r",
+        "\\r").replace("\n", "\\n").replace("\b", "\\b").replace("\f", "\\f");
   }
 
   private static String generateGetter(Binding<?> binding, String statement) {
-    TypeLiteral<?> type = binding.getKey().getTypeLiteral();
+    Key<?> key = binding.getKey();
+    TypeLiteral<?> type = key.getTypeLiteral();
     StringBuilder builder = new StringBuilder();
-    builder.append("private " + canonicalName(type) + " " + getterSignature(type) + " {\n");
+    builder.append("private " + canonicalName(type) + " " + getterSignature(key) + " {\n");
     builder.append("  return " + statement + ";\n");
     builder.append("}\n");
     builder.append("\n");
     return builder.toString();
   }
 
-  public static String getterSignature(TypeLiteral<?> type) {
-    return "get" + uniqueNameFor(type) + "()";
+  public static String getterSignature(Key<?> key) {
+    return "get" + uniqueNameFor(key) + "()";
   }
 
-  private static String uniqueNameFor(TypeLiteral<?> typeLiteral) {
+  private static String uniqueNameFor(Key<?> key) {
+    TypeLiteral<?> typeLiteral = key.getTypeLiteral();
     try {
-      byte[] stringBytes = canonicalName(typeLiteral).getBytes(Charset.forName("UTF-8"));
+      String string = canonicalName(typeLiteral) + "#" + key.getAnnotationType();
+      byte[] stringBytes = string.getBytes(Charset.forName("UTF-8"));
       byte[] hash = MessageDigest.getInstance("SHA-1").digest(stringBytes);
       return new BigInteger(1, hash).toString(16);
     } catch (NoSuchAlgorithmException e) {

@@ -18,7 +18,6 @@ import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.google.inject.Module;
 import com.google.inject.Stage;
-import com.google.inject.TypeLiteral;
 import com.google.inject.spi.BindingTargetVisitor;
 import com.google.inject.spi.ConstructorBinding;
 import com.google.inject.spi.ConvertedConstantBinding;
@@ -50,7 +49,7 @@ public class Deguicifier {
         + mainClass.getCanonicalName() + "> {\n");
 
     builder.append("public " + mainClass.getCanonicalName() + " get" + "() {\n");
-    builder.append("  return " + " " + getterSignature(TypeLiteral.get(mainClass)) + ";\n");
+    builder.append("  return " + " " + getterSignature(Key.get(mainClass)) + ";\n");
     builder.append("}\n");
     builder.append("\n");
 
