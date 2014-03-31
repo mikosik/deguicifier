@@ -20,7 +20,6 @@ import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.google.inject.Module;
 import com.google.inject.Scope;
-import com.google.inject.Scopes;
 import com.google.inject.Stage;
 import com.google.inject.spi.DefaultBindingScopingVisitor;
 
@@ -58,9 +57,7 @@ public class Deguicifier {
     }
 
     for (Scope scope : scopes.keySet()) {
-      if (scope != Scopes.SINGLETON) {
-        builder.append(scopeField(scope));
-      }
+      builder.append(scopeField(scope));
     }
 
     for (Binding<?> binding : injector.getAllBindings().values()) {

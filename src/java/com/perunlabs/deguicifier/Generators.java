@@ -35,10 +35,16 @@ public class Generators {
   }
 
   public static String scopeField(Scope scope) {
-    String fieldName = scopeFieldName(scope);
-    String canonicalName = scope.getClass().getCanonicalName();
-    return "private final com.google.inject.Scope " + fieldName + " = new " + canonicalName
-        + "();\n";
+    return "private final com.google.inject.Scope " + scopeFieldName(scope) + " = "
+        + scopeInstance(scope) + ";\n";
+  }
+
+  private static String scopeInstance(Scope scope) {
+    if (scope == Scopes.SINGLETON) {
+      return Scopes.class.getCanonicalName() + ".SINGLETON";
+    } else {
+      return "new " + scope.getClass().getCanonicalName() + "()";
+    }
   }
 
   public static String providerField(Binding<?> binding) {
@@ -184,11 +190,7 @@ public class Generators {
 
       @Override
       public String visitScope(Scope scope) {
-        if (scope == Scopes.SINGLETON) {
-          return statement;
-        } else {
-          return scopeFieldName(scope) + ".scope(null, " + guicify(statement) + ")";
-        }
+        return scopeFieldName(scope) + ".scope(null, " + guicify(statement) + ")";
       }
 
       @Override
