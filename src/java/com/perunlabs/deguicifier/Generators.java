@@ -10,6 +10,7 @@ import com.google.inject.Binding;
 import com.google.inject.Key;
 import com.google.inject.TypeLiteral;
 import com.google.inject.internal.ProviderMethod;
+import com.google.inject.multibindings.Multibinder;
 import com.google.inject.spi.ConstructorBinding;
 import com.google.inject.spi.Dependency;
 import com.google.inject.spi.HasDependencies;
@@ -87,6 +88,14 @@ public class Generators {
           "new " + declaringClass.getCanonicalName() + "()." + method.getName() + "("
               + generateArgumentList(binding) + ")";
       return generateGetter(binding, statement);
+    }
+    if (binding.getProviderInstance() instanceof Multibinder<?>) {
+      String statement =
+          "(" + canonicalName(binding.getKey().getTypeLiteral())
+              + ") new java.util.HashSet(java.util.Arrays.asList(new Object[] {"
+              + generateArgumentList(binding) + "}))";
+      return "@SuppressWarnings({ \"unchecked\", \"rawtypes\" })\n"
+          + generateGetter(binding, statement);
     }
     throw new DeguicifierException();
   }
