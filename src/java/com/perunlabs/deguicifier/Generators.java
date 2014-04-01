@@ -47,29 +47,17 @@ public class Generators {
   }
 
   public static String generateGetter(LinkedKeyBinding<?> binding) {
-    String statement = getterSignature(binding.getLinkedKey());
-    return generateGetter(binding, statement);
+    return generateGetter(binding, getterSignature(binding.getLinkedKey()));
   }
 
   public static String generateGetter(ProviderKeyBinding<?> binding) {
-    String statement = getterSignature(binding.getProviderKey()) + ".get()";
-    return generateGetter(binding, statement);
+    return generateGetter(binding, getterSignature(binding.getProviderKey()) + ".get()");
   }
 
   public static String generateGetter(ProviderBinding<?> binding) {
-    Key<?> providedKey = binding.getProvidedKey();
-    TypeLiteral<?> provided = providedKey.getTypeLiteral();
-    TypeLiteral<?> provider = binding.getKey().getTypeLiteral();
-
-    StringBuilder builder = new StringBuilder();
-    builder.append("new " + canonicalName(provider) + "() {\n");
-    builder.append("  public " + canonicalName(provided) + " get() {\n");
-    builder.append("    return " + getterSignature(providedKey) + "\n;");
-    builder.append("  }\n");
-    builder.append("}");
-    String statement = builder.toString();
-
-    return generateGetter(binding, statement);
+    Key<?> key = binding.getProvidedKey();
+    TypeLiteral<?> type = key.getTypeLiteral();
+    return generateGetter(binding, generateProvider(type, getterSignature(key)));
   }
 
   public static String generateGetter(ProviderInstanceBinding<?> binding) {
@@ -98,6 +86,18 @@ public class Generators {
           + generateGetter(binding, statement);
     }
     throw new DeguicifierException();
+  }
+
+  private static String generateProvider(TypeLiteral<?> type, String statement) {
+    String canonical = canonicalName(type);
+
+    StringBuilder builder = new StringBuilder();
+    builder.append("new " + "Provider<" + canonical + ">" + "() {\n");
+    builder.append("  public " + canonical + " get() {\n");
+    builder.append("    return " + statement + "\n;");
+    builder.append("  }\n");
+    builder.append("}");
+    return builder.toString();
   }
 
   public static String generateGetter(InstanceBinding<?> binding) {
