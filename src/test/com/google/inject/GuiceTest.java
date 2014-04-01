@@ -1,12 +1,21 @@
 package com.google.inject;
 
+import static com.google.inject.name.Names.named;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.sameInstance;
 import static org.testory.Testory.given;
 import static org.testory.Testory.thenReturned;
 import static org.testory.Testory.thenThrown;
 import static org.testory.Testory.when;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
+
 import org.junit.Test;
+
+import com.google.inject.util.Providers;
 
 public class GuiceTest {
   Guice guice = new Guice();
@@ -64,5 +73,41 @@ public class GuiceTest {
     when(injector.getInstance(Key.get(new TypeLiteral<Provider<Provider<Integer>>>() {})).get()
         .get());
     thenReturned(3);
+  }
+
+  @Test
+  public void binding_same_scope_instance_to_two_different_annotations() throws Exception {
+    given(injector = guice.createInjector(new AbstractModule() {
+      @Override
+      protected void configure() {
+        MyScope scope = new MyScope();
+        bindScope(MyScopingAnnotationA.class, scope);
+        bindScope(MyScopingAnnotationB.class, scope);
+        bind(Key.get(Object.class, named("a"))).to(Object.class).in(MyScopingAnnotationA.class);
+        bind(Key.get(Object.class, named("b"))).to(Object.class).in(MyScopingAnnotationB.class);
+      }
+    }));
+    when(injector.getInstance(Key.get(Object.class, named("a"))));
+    thenReturned(sameInstance(injector.getInstance(Key.get(Object.class, named("b")))));
+  }
+
+  @Target({ ElementType.TYPE, ElementType.METHOD })
+  @Retention(RUNTIME)
+  @ScopeAnnotation
+  public @interface MyScopingAnnotationA {}
+
+  @Target({ ElementType.TYPE, ElementType.METHOD })
+  @Retention(RUNTIME)
+  @ScopeAnnotation
+  public @interface MyScopingAnnotationB {}
+
+  public static class MyScope implements Scope {
+    private final Object object = new Object();
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public <T> Provider<T> scope(Key<T> key, Provider<T> unscoped) {
+      return (Provider<T>) Providers.of(object);
+    }
   }
 }
