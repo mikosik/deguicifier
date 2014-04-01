@@ -157,7 +157,10 @@ public class Generators {
     return binding.acceptScopingVisitor(new BindingScopingVisitor<String>() {
       @Override
       public String visitEagerSingleton() {
-        return statement;
+        if (binding instanceof InstanceBinding<?>) {
+          return statement;
+        }
+        throw new DeguicifierException();
       }
 
       @Override
