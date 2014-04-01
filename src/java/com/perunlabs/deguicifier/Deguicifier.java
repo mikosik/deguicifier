@@ -1,11 +1,14 @@
 package com.perunlabs.deguicifier;
 
 import static com.perunlabs.deguicifier.Generators.generateGetter;
+import static com.perunlabs.deguicifier.Generators.generateScopeField;
 import static com.perunlabs.deguicifier.Generators.getterSignature;
 import static java.util.Arrays.asList;
 import static java.util.Collections.unmodifiableSet;
 
 import java.util.HashSet;
+import java.util.IdentityHashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
@@ -17,10 +20,13 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.google.inject.Module;
+import com.google.inject.Scope;
+import com.google.inject.Scopes;
 import com.google.inject.Stage;
 import com.google.inject.spi.BindingTargetVisitor;
 import com.google.inject.spi.ConstructorBinding;
 import com.google.inject.spi.ConvertedConstantBinding;
+import com.google.inject.spi.DefaultBindingScopingVisitor;
 import com.google.inject.spi.ExposedBinding;
 import com.google.inject.spi.InstanceBinding;
 import com.google.inject.spi.LinkedKeyBinding;
@@ -52,6 +58,23 @@ public class Deguicifier {
     builder.append("  return " + " " + getterSignature(Key.get(mainClass)) + ";\n");
     builder.append("}\n");
     builder.append("\n");
+
+    final Map<Scope, Void> scopes = new IdentityHashMap<Scope, Void>();
+    for (Binding<?> entry : injector.getAllBindings().values()) {
+      entry.acceptScopingVisitor(new DefaultBindingScopingVisitor<Void>() {
+        @Override
+        public Void visitScope(Scope scope) {
+          scopes.put(scope, null);
+          return null;
+        }
+      });
+    }
+
+    for (Scope scope : scopes.keySet()) {
+      if (scope != Scopes.SINGLETON) {
+        builder.append(generateScopeField(scope));
+      }
+    }
 
     for (Binding<?> binding : injector.getAllBindings().values()) {
       if (!IGNORED_KEYS.contains(binding.getKey())) {

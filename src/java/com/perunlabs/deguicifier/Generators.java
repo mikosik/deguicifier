@@ -1,5 +1,6 @@
 package com.perunlabs.deguicifier;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.math.BigInteger;
 import java.nio.charset.Charset;
@@ -8,9 +9,12 @@ import java.security.NoSuchAlgorithmException;
 
 import com.google.inject.Binding;
 import com.google.inject.Key;
+import com.google.inject.Scope;
+import com.google.inject.Scopes;
 import com.google.inject.TypeLiteral;
 import com.google.inject.internal.ProviderMethod;
 import com.google.inject.multibindings.Multibinder;
+import com.google.inject.spi.BindingScopingVisitor;
 import com.google.inject.spi.ConstructorBinding;
 import com.google.inject.spi.Dependency;
 import com.google.inject.spi.HasDependencies;
@@ -21,6 +25,14 @@ import com.google.inject.spi.ProviderInstanceBinding;
 import com.google.inject.spi.ProviderKeyBinding;
 
 public class Generators {
+
+  public static String generateScopeField(Scope scope) {
+    String fieldName = scopeFieldName(scope);
+    String canonicalName = scope.getClass().getCanonicalName();
+    return "private final com.google.inject.Scope " + fieldName + " = new " + canonicalName
+        + "();\n";
+  }
+
   public static String generateGetter(ConstructorBinding<?> binding) {
     String statement = generateConstructorInvocation(binding);
     return generateGetter(binding, statement);
@@ -135,10 +147,47 @@ public class Generators {
     TypeLiteral<?> type = key.getTypeLiteral();
     StringBuilder builder = new StringBuilder();
     builder.append("private " + canonicalName(type) + " " + getterSignature(key) + " {\n");
-    builder.append("  return " + statement + ";\n");
+    builder.append("  return " + generateScope(binding, statement) + ";\n");
     builder.append("}\n");
     builder.append("\n");
     return builder.toString();
+  }
+
+  private static String generateScope(final Binding<?> binding, final String statement) {
+    return binding.acceptScopingVisitor(new BindingScopingVisitor<String>() {
+      @Override
+      public String visitEagerSingleton() {
+        return statement;
+      }
+
+      @Override
+      public String visitScope(Scope scope) {
+        if (scope == Scopes.SINGLETON) {
+          return statement;
+        } else {
+          String generatedProvider = generateProvider(binding.getKey().getTypeLiteral(), statement);
+          return scopeFieldName(scope) + ".scope(null, " + guicify(generatedProvider) + ").get()";
+        }
+      }
+
+      @Override
+      public String visitScopeAnnotation(Class<? extends Annotation> scopeAnnotation) {
+        throw new DeguicifierException();
+      }
+
+      @Override
+      public String visitNoScoping() {
+        return statement;
+      }
+    });
+  }
+
+  private static String guicify(String statement) {
+    return "com.google.inject.util.Providers.guicify(" + statement + ")";
+  }
+
+  private static String scopeFieldName(Scope scope) {
+    return "scope_" + System.identityHashCode(scope);
   }
 
   public static String getterSignature(Key<?> key) {
