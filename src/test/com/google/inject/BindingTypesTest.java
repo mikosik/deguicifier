@@ -10,6 +10,7 @@ import org.junit.Test;
 import com.google.inject.spi.ConstructorBinding;
 import com.google.inject.spi.InstanceBinding;
 import com.google.inject.spi.LinkedKeyBinding;
+import com.google.inject.spi.ProviderBinding;
 import com.google.inject.spi.ProviderInstanceBinding;
 import com.google.inject.spi.ProviderKeyBinding;
 
@@ -54,6 +55,17 @@ public class BindingTypesTest {
     given(injector = Guice.createInjector(module));
     when(injector.getBinding(Interface.class));
     thenReturned(instanceOf(ProviderKeyBinding.class));
+  }
+
+  @Test
+  public void binds_provider_implicitly() {
+    given(module = new AbstractModule() {
+      @Override
+      protected void configure() {}
+    });
+    given(injector = Guice.createInjector(module));
+    when(injector.getBinding(Key.get(new TypeLiteral<Provider<Implementation>>() {})));
+    thenReturned(instanceOf(ProviderBinding.class));
   }
 
   @Test
