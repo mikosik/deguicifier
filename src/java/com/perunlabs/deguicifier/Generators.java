@@ -15,18 +15,14 @@ import com.google.inject.TypeLiteral;
 import com.google.inject.internal.ProviderMethod;
 import com.google.inject.multibindings.Multibinder;
 import com.google.inject.spi.BindingScopingVisitor;
-import com.google.inject.spi.BindingTargetVisitor;
 import com.google.inject.spi.ConstructorBinding;
-import com.google.inject.spi.ConvertedConstantBinding;
 import com.google.inject.spi.Dependency;
-import com.google.inject.spi.ExposedBinding;
 import com.google.inject.spi.HasDependencies;
 import com.google.inject.spi.InstanceBinding;
 import com.google.inject.spi.LinkedKeyBinding;
 import com.google.inject.spi.ProviderBinding;
 import com.google.inject.spi.ProviderInstanceBinding;
 import com.google.inject.spi.ProviderKeyBinding;
-import com.google.inject.spi.UntargettedBinding;
 
 public class Generators {
   public static String mainGetter(final Class<?> mainClass) {
@@ -46,118 +42,110 @@ public class Generators {
   }
 
   public static String getter(Binding<?> binding) {
-    return binding.acceptTargetVisitor(new BindingTargetVisitor<Object, String>() {
-      @Override
-      public String visit(InstanceBinding<?> binding) {
-        return getter(binding);
-      }
-
-      @Override
-      public String visit(ProviderInstanceBinding<?> binding) {
-        return getter(binding);
-      }
-
-      @Override
-      public String visit(ProviderKeyBinding<?> binding) {
-        return getter(binding);
-      }
-
-      @Override
-      public String visit(LinkedKeyBinding<?> binding) {
-        return getter(binding);
-      }
-
-      @Override
-      public String visit(ExposedBinding<?> binding) {
-        throw new RuntimeException();
-      }
-
-      @Override
-      public String visit(UntargettedBinding<?> binding) {
-        throw new RuntimeException();
-      }
-
-      @Override
-      public String visit(ConstructorBinding<?> binding) {
-        return getter(binding);
-      }
-
-      @Override
-      public String visit(ConvertedConstantBinding<?> binding) {
-        throw new RuntimeException();
-      }
-
-      @Override
-      public String visit(ProviderBinding<?> binding) {
-        return getter(binding);
-      }
-    });
+    return getter(binding, getterStatement(binding));
   }
 
-  private static String getter(ConstructorBinding<?> binding) {
-    String statement = generateConstructorInvocation(binding);
-    return getter(binding, statement);
+  private static String getterStatement(Binding<?> binding) {
+    if (binding instanceof InstanceBinding<?>) {
+      return instanceLiteral((InstanceBinding<?>) binding);
+    } else if (binding instanceof ProviderKeyBinding<?>) {
+      return getterCall(((ProviderKeyBinding<?>) binding).getProviderKey()) + ".get()";
+    } else if (binding instanceof LinkedKeyBinding<?>) {
+      return getterCall(((LinkedKeyBinding<?>) binding).getLinkedKey());
+    } else if (binding instanceof ConstructorBinding<?>) {
+      return constructorCall((ConstructorBinding<?>) binding);
+    } else if (binding instanceof ProviderBinding<?>) {
+      return provider((ProviderBinding<?>) binding);
+    } else if (binding instanceof ProviderInstanceBinding<?>) {
+      return getterStatement((ProviderInstanceBinding<?>) binding);
+    } else {
+      throw new DeguicifierException();
+    }
   }
 
-  private static String generateConstructorInvocation(ConstructorBinding<?> binding) {
+  private static String getterStatement(ProviderInstanceBinding<?> binding) {
+    if (binding.getProviderInstance() instanceof ProviderMethod<?>) {
+      ProviderMethod<?> provider = (ProviderMethod<?>) binding.getProviderInstance();
+      return providesMethodCall(binding, provider);
+    } else if (binding.getProviderInstance() instanceof Multibinder<?>) {
+      return createSetCall(binding);
+    } else {
+      throw new DeguicifierException();
+    }
+  }
+
+  private static String getter(Binding<?> binding, String statement) {
+    Key<?> key = binding.getKey();
+    TypeLiteral<?> type = key.getTypeLiteral();
     StringBuilder builder = new StringBuilder();
+    builder.append("private " + canonicalName(type) + " " + getterMethodName(key) + "()" + " {\n");
+    builder.append("  return " + scoped(binding, statement) + ";\n");
+    builder.append("}\n");
+    builder.append("\n");
+    return builder.toString();
+  }
 
+  private static String constructorCall(ConstructorBinding<?> binding) {
+    StringBuilder builder = new StringBuilder();
     builder.append("new " + canonicalName(binding.getKey().getTypeLiteral()) + "(\n");
-    builder.append(generateArgumentList(binding));
+    builder.append(argumentList(binding));
     builder.append(")");
     return builder.toString();
   }
 
-  private static String generateArgumentList(HasDependencies binding) {
-    StringBuilder builder = new StringBuilder();
-    for (Dependency<?> dependency : binding.getDependencies()) {
-      builder.append(getterCall(dependency.getKey()) + ",");
+  private static String instanceLiteral(InstanceBinding<?> binding) {
+    Object instance = binding.getInstance();
+    if (instance instanceof Boolean) {
+      return instance.toString();
+    } else if (instance instanceof Character) {
+      return "'" + instance.toString() + "'";
+    } else if (instance instanceof Byte) {
+      return instance.toString();
+    } else if (instance instanceof Short) {
+      return instance.toString();
+    } else if (instance instanceof Integer) {
+      return instance.toString();
+    } else if (instance instanceof Long) {
+      return instance.toString() + "L";
+    } else if (instance instanceof Float) {
+      return instance.toString() + "f";
+    } else if (instance instanceof Double) {
+      return instance.toString() + "d";
+    } else if (instance instanceof String) {
+      return "\"" + escape(instance.toString()) + "\"";
+    } else {
+      throw new DeguicifierException();
     }
-    if (0 < binding.getDependencies().size()) {
-      builder.deleteCharAt(builder.length() - 1);
-    }
-    return builder.toString();
   }
 
-  private static String getter(LinkedKeyBinding<?> binding) {
-    return getter(binding, getterCall(binding.getLinkedKey()));
-  }
-
-  private static String getter(ProviderKeyBinding<?> binding) {
-    return getter(binding, getterCall(binding.getProviderKey()) + ".get()");
-  }
-
-  private static String getter(ProviderBinding<?> binding) {
+  private static String provider(ProviderBinding<?> binding) {
     Key<?> key = binding.getProvidedKey();
     TypeLiteral<?> type = key.getTypeLiteral();
-    return getter(binding, provider(type, getterCall(key)));
+    return provider(type, getterCall(key));
   }
 
-  private static String getter(ProviderInstanceBinding<?> binding) {
-    if (binding.getProviderInstance() instanceof ProviderMethod<?>) {
-      Method method = ((ProviderMethod<?>) binding.getProviderInstance()).getMethod();
-      Class<?> declaringClass = method.getDeclaringClass();
-      if (declaringClass.isLocalClass()) {
-        throw new DeguicifierException();
-      }
-      try {
-        declaringClass.getConstructor();
-      } catch (NoSuchMethodException e) {
-        throw new DeguicifierException(e);
-      }
-      String statement =
-          "new " + declaringClass.getCanonicalName() + "()." + method.getName() + "("
-              + generateArgumentList(binding) + ")";
-      return getter(binding, statement);
+  private static String createSetCall(ProviderInstanceBinding<?> binding) {
+    return "(" + canonicalName(binding.getKey().getTypeLiteral())
+        + ") new java.util.HashSet(java.util.Arrays.asList(new Object[] {" + argumentList(binding)
+        + "}))";
+  }
+
+  private static String providesMethodCall(ProviderInstanceBinding<?> binding,
+      ProviderMethod<?> provider) {
+    Method providesMethod = provider.getMethod();
+    Class<?> moduleClass = providesMethod.getDeclaringClass();
+    if (moduleClass.isLocalClass()) {
+      throw new DeguicifierException();
     }
-    if (binding.getProviderInstance() instanceof Multibinder<?>) {
-      String statement =
-          "(" + canonicalName(binding.getKey().getTypeLiteral())
-              + ") new java.util.HashSet(java.util.Arrays.asList(new Object[] {"
-              + generateArgumentList(binding) + "}))";
-      return getter(binding, statement);
+    try {
+      moduleClass.getConstructor();
+    } catch (NoSuchMethodException e) {
+      throw new DeguicifierException(e);
     }
-    throw new DeguicifierException();
+    String statement =
+        "new " + moduleClass.getCanonicalName() + "()." + providesMethod.getName() + "("
+            + argumentList(binding) + ")";
+    return statement;
   }
 
   private static String provider(TypeLiteral<?> type, String statement) {
@@ -172,45 +160,20 @@ public class Generators {
     return builder.toString();
   }
 
-  private static String getter(InstanceBinding<?> binding) {
-    Object instance = binding.getInstance();
-    if (instance instanceof Boolean) {
-      return getter(binding, instance.toString());
-    } else if (instance instanceof Character) {
-      return getter(binding, "'" + instance.toString() + "'");
-    } else if (instance instanceof Byte) {
-      return getter(binding, instance.toString());
-    } else if (instance instanceof Short) {
-      return getter(binding, instance.toString());
-    } else if (instance instanceof Integer) {
-      return getter(binding, instance.toString());
-    } else if (instance instanceof Long) {
-      return getter(binding, instance.toString() + "L");
-    } else if (instance instanceof Float) {
-      return getter(binding, instance.toString() + "f");
-    } else if (instance instanceof Double) {
-      return getter(binding, instance.toString() + "d");
-    } else if (instance instanceof String) {
-      return getter(binding, "\"" + escape(instance.toString()) + "\"");
-    } else {
-      throw new DeguicifierException();
+  private static String argumentList(HasDependencies binding) {
+    StringBuilder builder = new StringBuilder();
+    for (Dependency<?> dependency : binding.getDependencies()) {
+      builder.append(getterCall(dependency.getKey()) + ",");
     }
+    if (0 < binding.getDependencies().size()) {
+      builder.deleteCharAt(builder.length() - 1);
+    }
+    return builder.toString();
   }
 
   private static String escape(String string) {
     return string.replace("\\", "\\\\").replace("\"", "\\\"").replace("\t", "\\t").replace("\r",
         "\\r").replace("\n", "\\n").replace("\b", "\\b").replace("\f", "\\f");
-  }
-
-  private static String getter(Binding<?> binding, String statement) {
-    Key<?> key = binding.getKey();
-    TypeLiteral<?> type = key.getTypeLiteral();
-    StringBuilder builder = new StringBuilder();
-    builder.append("private " + canonicalName(type) + " " + getterMethodName(key) + "()" + " {\n");
-    builder.append("  return " + scoped(binding, statement) + ";\n");
-    builder.append("}\n");
-    builder.append("\n");
-    return builder.toString();
   }
 
   private static String scoped(final Binding<?> binding, final String statement) {
