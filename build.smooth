@@ -6,6 +6,8 @@ javax.inject.jar:         file("lib/javax.inject.jar");
 junit.jar:                file("lib/junit-4.11.jar");
 testory.jar:              file("lib/testory-0.13.0.jar");
 
+sourceFiles: files("src/java");
+
 dep-jars: [
   guice.jar,
   guice-multibindings.jar,
@@ -13,8 +15,9 @@ dep-jars: [
 ];
 
 deguicifier.jar:
-  files("src/java") |
+  sourceFiles |
   javac(libs=dep-jars) |
+  concatenateFiles(with=sourceFiles) |
   jar ;
 
 
