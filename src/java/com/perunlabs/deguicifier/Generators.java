@@ -155,7 +155,7 @@ public class Generators {
           "(" + canonicalName(binding.getKey().getTypeLiteral())
               + ") new java.util.HashSet(java.util.Arrays.asList(new Object[] {"
               + generateArgumentList(binding) + "}))";
-      return "@SuppressWarnings({ \"unchecked\", \"rawtypes\" })\n" + getter(binding, statement);
+      return getter(binding, statement);
     }
     throw new DeguicifierException();
   }

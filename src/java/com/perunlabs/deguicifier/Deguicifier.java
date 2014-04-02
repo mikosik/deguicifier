@@ -40,6 +40,7 @@ public class Deguicifier {
     StringBuilder builder = new StringBuilder();
 
     builder.append("import " + Provider.class.getName() + ";\n");
+    builder.append("@SuppressWarnings(\"all\")\n");
     builder.append("public class " + FACTORY_CLASS_NAME + " implements javax.inject.Provider<"
         + mainClass.getCanonicalName() + "> {\n");
 

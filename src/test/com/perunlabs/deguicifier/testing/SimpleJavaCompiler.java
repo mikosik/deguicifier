@@ -15,6 +15,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import javax.inject.Provider;
+import javax.tools.Diagnostic;
 import javax.tools.DiagnosticCollector;
 import javax.tools.DiagnosticListener;
 import javax.tools.JavaCompiler;
@@ -65,9 +66,20 @@ public class SimpleJavaCompiler {
       File... files) throws IOException {
     DiagnosticCollector<JavaFileObject> diagnosticCollector =
         compileFiles(destinationBaseDir, classpath, files);
-    if (!diagnosticCollector.getDiagnostics().isEmpty()) {
+    if (problemsFound(diagnosticCollector)) {
       throw new RuntimeException("Compiling failed with:\n" + diagnosticCollector.getDiagnostics());
     }
+  }
+
+  private static boolean problemsFound(DiagnosticCollector<JavaFileObject> diagnosticCollector) {
+    for (Diagnostic<? extends JavaFileObject> diagnostic : diagnosticCollector.getDiagnostics()) {
+      if (diagnostic.getKind() == Diagnostic.Kind.ERROR
+          || diagnostic.getKind() == Diagnostic.Kind.MANDATORY_WARNING
+          || diagnostic.getKind() == Diagnostic.Kind.WARNING) {
+        return true;
+      }
+    }
+    return false;
   }
 
   private static DiagnosticCollector<JavaFileObject> compileFiles(File destinationBaseDir,
