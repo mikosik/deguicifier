@@ -15,27 +15,88 @@ import com.google.inject.TypeLiteral;
 import com.google.inject.internal.ProviderMethod;
 import com.google.inject.multibindings.Multibinder;
 import com.google.inject.spi.BindingScopingVisitor;
+import com.google.inject.spi.BindingTargetVisitor;
 import com.google.inject.spi.ConstructorBinding;
+import com.google.inject.spi.ConvertedConstantBinding;
 import com.google.inject.spi.Dependency;
+import com.google.inject.spi.ExposedBinding;
 import com.google.inject.spi.HasDependencies;
 import com.google.inject.spi.InstanceBinding;
 import com.google.inject.spi.LinkedKeyBinding;
 import com.google.inject.spi.ProviderBinding;
 import com.google.inject.spi.ProviderInstanceBinding;
 import com.google.inject.spi.ProviderKeyBinding;
+import com.google.inject.spi.UntargettedBinding;
 
 public class Generators {
+  public static String mainGetter(final Class<?> mainClass) {
+    StringBuilder builder = new StringBuilder();
+    builder.append("public " + mainClass.getCanonicalName() + " get" + "() {\n");
+    builder.append("  return " + " " + getterCall(Key.get(mainClass)) + ";\n");
+    builder.append("}\n");
+    builder.append("\n");
+    return builder.toString();
+  }
 
-  public static String generateScopeField(Scope scope) {
+  public static String scopeField(Scope scope) {
     String fieldName = scopeFieldName(scope);
     String canonicalName = scope.getClass().getCanonicalName();
     return "private final com.google.inject.Scope " + fieldName + " = new " + canonicalName
         + "();\n";
   }
 
-  public static String generateGetter(ConstructorBinding<?> binding) {
+  public static String getter(Binding<?> binding) {
+    return binding.acceptTargetVisitor(new BindingTargetVisitor<Object, String>() {
+      @Override
+      public String visit(InstanceBinding<?> binding) {
+        return getter(binding);
+      }
+
+      @Override
+      public String visit(ProviderInstanceBinding<?> binding) {
+        return getter(binding);
+      }
+
+      @Override
+      public String visit(ProviderKeyBinding<?> binding) {
+        return getter(binding);
+      }
+
+      @Override
+      public String visit(LinkedKeyBinding<?> binding) {
+        return getter(binding);
+      }
+
+      @Override
+      public String visit(ExposedBinding<?> binding) {
+        throw new RuntimeException();
+      }
+
+      @Override
+      public String visit(UntargettedBinding<?> binding) {
+        throw new RuntimeException();
+      }
+
+      @Override
+      public String visit(ConstructorBinding<?> binding) {
+        return getter(binding);
+      }
+
+      @Override
+      public String visit(ConvertedConstantBinding<?> binding) {
+        throw new RuntimeException();
+      }
+
+      @Override
+      public String visit(ProviderBinding<?> binding) {
+        return getter(binding);
+      }
+    });
+  }
+
+  private static String getter(ConstructorBinding<?> binding) {
     String statement = generateConstructorInvocation(binding);
-    return generateGetter(binding, statement);
+    return getter(binding, statement);
   }
 
   private static String generateConstructorInvocation(ConstructorBinding<?> binding) {
@@ -50,7 +111,7 @@ public class Generators {
   private static String generateArgumentList(HasDependencies binding) {
     StringBuilder builder = new StringBuilder();
     for (Dependency<?> dependency : binding.getDependencies()) {
-      builder.append(getterSignature(dependency.getKey()) + ",");
+      builder.append(getterCall(dependency.getKey()) + ",");
     }
     if (0 < binding.getDependencies().size()) {
       builder.deleteCharAt(builder.length() - 1);
@@ -58,21 +119,21 @@ public class Generators {
     return builder.toString();
   }
 
-  public static String generateGetter(LinkedKeyBinding<?> binding) {
-    return generateGetter(binding, getterSignature(binding.getLinkedKey()));
+  private static String getter(LinkedKeyBinding<?> binding) {
+    return getter(binding, getterCall(binding.getLinkedKey()));
   }
 
-  public static String generateGetter(ProviderKeyBinding<?> binding) {
-    return generateGetter(binding, getterSignature(binding.getProviderKey()) + ".get()");
+  private static String getter(ProviderKeyBinding<?> binding) {
+    return getter(binding, getterCall(binding.getProviderKey()) + ".get()");
   }
 
-  public static String generateGetter(ProviderBinding<?> binding) {
+  private static String getter(ProviderBinding<?> binding) {
     Key<?> key = binding.getProvidedKey();
     TypeLiteral<?> type = key.getTypeLiteral();
-    return generateGetter(binding, generateProvider(type, getterSignature(key)));
+    return getter(binding, provider(type, getterCall(key)));
   }
 
-  public static String generateGetter(ProviderInstanceBinding<?> binding) {
+  private static String getter(ProviderInstanceBinding<?> binding) {
     if (binding.getProviderInstance() instanceof ProviderMethod<?>) {
       Method method = ((ProviderMethod<?>) binding.getProviderInstance()).getMethod();
       Class<?> declaringClass = method.getDeclaringClass();
@@ -87,20 +148,19 @@ public class Generators {
       String statement =
           "new " + declaringClass.getCanonicalName() + "()." + method.getName() + "("
               + generateArgumentList(binding) + ")";
-      return generateGetter(binding, statement);
+      return getter(binding, statement);
     }
     if (binding.getProviderInstance() instanceof Multibinder<?>) {
       String statement =
           "(" + canonicalName(binding.getKey().getTypeLiteral())
               + ") new java.util.HashSet(java.util.Arrays.asList(new Object[] {"
               + generateArgumentList(binding) + "}))";
-      return "@SuppressWarnings({ \"unchecked\", \"rawtypes\" })\n"
-          + generateGetter(binding, statement);
+      return "@SuppressWarnings({ \"unchecked\", \"rawtypes\" })\n" + getter(binding, statement);
     }
     throw new DeguicifierException();
   }
 
-  private static String generateProvider(TypeLiteral<?> type, String statement) {
+  private static String provider(TypeLiteral<?> type, String statement) {
     String canonical = canonicalName(type);
 
     StringBuilder builder = new StringBuilder();
@@ -112,26 +172,26 @@ public class Generators {
     return builder.toString();
   }
 
-  public static String generateGetter(InstanceBinding<?> binding) {
+  private static String getter(InstanceBinding<?> binding) {
     Object instance = binding.getInstance();
     if (instance instanceof Boolean) {
-      return generateGetter(binding, instance.toString());
+      return getter(binding, instance.toString());
     } else if (instance instanceof Character) {
-      return generateGetter(binding, "'" + instance.toString() + "'");
+      return getter(binding, "'" + instance.toString() + "'");
     } else if (instance instanceof Byte) {
-      return generateGetter(binding, instance.toString());
+      return getter(binding, instance.toString());
     } else if (instance instanceof Short) {
-      return generateGetter(binding, instance.toString());
+      return getter(binding, instance.toString());
     } else if (instance instanceof Integer) {
-      return generateGetter(binding, instance.toString());
+      return getter(binding, instance.toString());
     } else if (instance instanceof Long) {
-      return generateGetter(binding, instance.toString() + "L");
+      return getter(binding, instance.toString() + "L");
     } else if (instance instanceof Float) {
-      return generateGetter(binding, instance.toString() + "f");
+      return getter(binding, instance.toString() + "f");
     } else if (instance instanceof Double) {
-      return generateGetter(binding, instance.toString() + "d");
+      return getter(binding, instance.toString() + "d");
     } else if (instance instanceof String) {
-      return generateGetter(binding, "\"" + escape(instance.toString()) + "\"");
+      return getter(binding, "\"" + escape(instance.toString()) + "\"");
     } else {
       throw new DeguicifierException();
     }
@@ -142,18 +202,18 @@ public class Generators {
         "\\r").replace("\n", "\\n").replace("\b", "\\b").replace("\f", "\\f");
   }
 
-  private static String generateGetter(Binding<?> binding, String statement) {
+  private static String getter(Binding<?> binding, String statement) {
     Key<?> key = binding.getKey();
     TypeLiteral<?> type = key.getTypeLiteral();
     StringBuilder builder = new StringBuilder();
-    builder.append("private " + canonicalName(type) + " " + getterSignature(key) + " {\n");
-    builder.append("  return " + generateScope(binding, statement) + ";\n");
+    builder.append("private " + canonicalName(type) + " " + getterMethodName(key) + "()" + " {\n");
+    builder.append("  return " + scoped(binding, statement) + ";\n");
     builder.append("}\n");
     builder.append("\n");
     return builder.toString();
   }
 
-  private static String generateScope(final Binding<?> binding, final String statement) {
+  private static String scoped(final Binding<?> binding, final String statement) {
     return binding.acceptScopingVisitor(new BindingScopingVisitor<String>() {
       @Override
       public String visitEagerSingleton() {
@@ -168,7 +228,7 @@ public class Generators {
         if (scope == Scopes.SINGLETON) {
           return statement;
         } else {
-          String generatedProvider = generateProvider(binding.getKey().getTypeLiteral(), statement);
+          String generatedProvider = provider(binding.getKey().getTypeLiteral(), statement);
           return scopeFieldName(scope) + ".scope(null, " + guicify(generatedProvider) + ").get()";
         }
       }
@@ -193,8 +253,12 @@ public class Generators {
     return "scope_" + System.identityHashCode(scope);
   }
 
-  public static String getterSignature(Key<?> key) {
-    return "get" + uniqueNameFor(key) + "()";
+  private static String getterCall(Key<?> key) {
+    return getterMethodName(key) + "()";
+  }
+
+  private static String getterMethodName(Key<?> key) {
+    return "get" + uniqueNameFor(key);
   }
 
   private static String uniqueNameFor(Key<?> key) {

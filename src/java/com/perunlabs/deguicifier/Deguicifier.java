@@ -1,8 +1,7 @@
 package com.perunlabs.deguicifier;
 
-import static com.perunlabs.deguicifier.Generators.generateGetter;
-import static com.perunlabs.deguicifier.Generators.generateScopeField;
-import static com.perunlabs.deguicifier.Generators.getterSignature;
+import static com.perunlabs.deguicifier.Generators.getter;
+import static com.perunlabs.deguicifier.Generators.scopeField;
 import static java.util.Arrays.asList;
 import static java.util.Collections.unmodifiableSet;
 
@@ -23,17 +22,7 @@ import com.google.inject.Module;
 import com.google.inject.Scope;
 import com.google.inject.Scopes;
 import com.google.inject.Stage;
-import com.google.inject.spi.BindingTargetVisitor;
-import com.google.inject.spi.ConstructorBinding;
-import com.google.inject.spi.ConvertedConstantBinding;
 import com.google.inject.spi.DefaultBindingScopingVisitor;
-import com.google.inject.spi.ExposedBinding;
-import com.google.inject.spi.InstanceBinding;
-import com.google.inject.spi.LinkedKeyBinding;
-import com.google.inject.spi.ProviderBinding;
-import com.google.inject.spi.ProviderInstanceBinding;
-import com.google.inject.spi.ProviderKeyBinding;
-import com.google.inject.spi.UntargettedBinding;
 
 public class Deguicifier {
   public static final String FACTORY_CLASS_NAME = "GeneratedFactory";
@@ -54,10 +43,7 @@ public class Deguicifier {
     builder.append("public class " + FACTORY_CLASS_NAME + " implements javax.inject.Provider<"
         + mainClass.getCanonicalName() + "> {\n");
 
-    builder.append("public " + mainClass.getCanonicalName() + " get" + "() {\n");
-    builder.append("  return " + " " + getterSignature(Key.get(mainClass)) + ";\n");
-    builder.append("}\n");
-    builder.append("\n");
+    builder.append(Generators.mainGetter(mainClass));
 
     final Map<Scope, Void> scopes = new IdentityHashMap<Scope, Void>();
     for (Binding<?> entry : injector.getAllBindings().values()) {
@@ -72,71 +58,18 @@ public class Deguicifier {
 
     for (Scope scope : scopes.keySet()) {
       if (scope != Scopes.SINGLETON) {
-        builder.append(generateScopeField(scope));
+        builder.append(scopeField(scope));
       }
     }
 
     for (Binding<?> binding : injector.getAllBindings().values()) {
       if (!IGNORED_KEYS.contains(binding.getKey())) {
-        builder.append(emit(binding));
+        builder.append(getter(binding));
       }
     }
 
     builder.append("}\n");
     return builder.toString();
-  }
-
-  private static String emit(Binding<?> binding) {
-    return binding.acceptTargetVisitor(createBindingTargetVisitor());
-  }
-
-  private static BindingTargetVisitor<Object, String> createBindingTargetVisitor() {
-    return new BindingTargetVisitor<Object, String>() {
-      @Override
-      public String visit(InstanceBinding<?> binding) {
-        return generateGetter(binding);
-      }
-
-      @Override
-      public String visit(ProviderInstanceBinding<?> binding) {
-        return generateGetter(binding);
-      }
-
-      @Override
-      public String visit(ProviderKeyBinding<?> binding) {
-        return generateGetter(binding);
-      }
-
-      @Override
-      public String visit(LinkedKeyBinding<?> binding) {
-        return generateGetter(binding);
-      }
-
-      @Override
-      public String visit(ExposedBinding<?> binding) {
-        throw new RuntimeException();
-      }
-
-      @Override
-      public String visit(UntargettedBinding<?> binding) {
-        throw new RuntimeException();
-      }
-
-      @Override
-      public String visit(ConstructorBinding<?> binding) {
-        return generateGetter(binding);
-      }
-
-      @Override
-      public String visit(ConvertedConstantBinding<?> binding) {
-        throw new RuntimeException();
-      }
-
-      @Override
-      public String visit(ProviderBinding<?> binding) {
-        return generateGetter(binding);
-      }
-    };
   }
 
   @SafeVarargs
