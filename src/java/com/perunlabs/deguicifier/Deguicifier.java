@@ -1,6 +1,6 @@
 package com.perunlabs.deguicifier;
 
-import static com.perunlabs.deguicifier.Generators.getter;
+import static com.perunlabs.deguicifier.Generators.providerField;
 import static com.perunlabs.deguicifier.Generators.scopeField;
 import static java.util.Arrays.asList;
 import static java.util.Collections.unmodifiableSet;
@@ -65,7 +65,7 @@ public class Deguicifier {
 
     for (Binding<?> binding : injector.getAllBindings().values()) {
       if (!IGNORED_KEYS.contains(binding.getKey())) {
-        builder.append(getter(binding));
+        builder.append(providerField(binding));
       }
     }
 

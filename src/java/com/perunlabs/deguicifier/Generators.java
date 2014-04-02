@@ -28,7 +28,7 @@ public class Generators {
   public static String mainGetter(final Class<?> mainClass) {
     StringBuilder builder = new StringBuilder();
     builder.append("public " + mainClass.getCanonicalName() + " get" + "() {\n");
-    builder.append("  return " + " " + getterCall(Key.get(mainClass)) + ";\n");
+    builder.append("  return " + " " + providerCall(Key.get(mainClass)) + ";\n");
     builder.append("}\n");
     builder.append("\n");
     return builder.toString();
@@ -41,29 +41,29 @@ public class Generators {
         + "();\n";
   }
 
-  public static String getter(Binding<?> binding) {
-    return getter(binding, getterStatement(binding));
+  public static String providerField(Binding<?> binding) {
+    return providerField(binding, instantiation(binding));
   }
 
-  private static String getterStatement(Binding<?> binding) {
+  private static String instantiation(Binding<?> binding) {
     if (binding instanceof InstanceBinding<?>) {
       return instanceLiteral((InstanceBinding<?>) binding);
     } else if (binding instanceof ProviderKeyBinding<?>) {
-      return getterCall(((ProviderKeyBinding<?>) binding).getProviderKey()) + ".get()";
+      return providerCall(((ProviderKeyBinding<?>) binding).getProviderKey()) + ".get()";
     } else if (binding instanceof LinkedKeyBinding<?>) {
-      return getterCall(((LinkedKeyBinding<?>) binding).getLinkedKey());
+      return providerCall(((LinkedKeyBinding<?>) binding).getLinkedKey());
     } else if (binding instanceof ConstructorBinding<?>) {
       return constructorCall((ConstructorBinding<?>) binding);
     } else if (binding instanceof ProviderBinding<?>) {
       return provider((ProviderBinding<?>) binding);
     } else if (binding instanceof ProviderInstanceBinding<?>) {
-      return getterStatement((ProviderInstanceBinding<?>) binding);
+      return instantiation((ProviderInstanceBinding<?>) binding);
     } else {
       throw new DeguicifierException();
     }
   }
 
-  private static String getterStatement(ProviderInstanceBinding<?> binding) {
+  private static String instantiation(ProviderInstanceBinding<?> binding) {
     if (binding.getProviderInstance() instanceof ProviderMethod<?>) {
       ProviderMethod<?> provider = (ProviderMethod<?>) binding.getProviderInstance();
       return providesMethodCall(binding, provider);
@@ -74,15 +74,11 @@ public class Generators {
     }
   }
 
-  private static String getter(Binding<?> binding, String statement) {
+  private static String providerField(Binding<?> binding, String statement) {
     Key<?> key = binding.getKey();
     TypeLiteral<?> type = key.getTypeLiteral();
-    StringBuilder builder = new StringBuilder();
-    builder.append("private " + canonicalName(type) + " " + getterMethodName(key) + "()" + " {\n");
-    builder.append("  return " + scoped(binding, statement) + ";\n");
-    builder.append("}\n");
-    builder.append("\n");
-    return builder.toString();
+    return "private final Provider<" + canonicalName(type) + "> " + providerFieldName(key) + " = "
+        + scoped(binding, provider(type, statement)) + ";\n";
   }
 
   private static String constructorCall(ConstructorBinding<?> binding) {
@@ -121,7 +117,7 @@ public class Generators {
   private static String provider(ProviderBinding<?> binding) {
     Key<?> key = binding.getProvidedKey();
     TypeLiteral<?> type = key.getTypeLiteral();
-    return provider(type, getterCall(key));
+    return provider(type, providerCall(key));
   }
 
   private static String createSetCall(ProviderInstanceBinding<?> binding) {
@@ -163,7 +159,7 @@ public class Generators {
   private static String argumentList(HasDependencies binding) {
     StringBuilder builder = new StringBuilder();
     for (Dependency<?> dependency : binding.getDependencies()) {
-      builder.append(getterCall(dependency.getKey()) + ",");
+      builder.append(providerCall(dependency.getKey()) + ",");
     }
     if (0 < binding.getDependencies().size()) {
       builder.deleteCharAt(builder.length() - 1);
@@ -191,8 +187,7 @@ public class Generators {
         if (scope == Scopes.SINGLETON) {
           return statement;
         } else {
-          String generatedProvider = provider(binding.getKey().getTypeLiteral(), statement);
-          return scopeFieldName(scope) + ".scope(null, " + guicify(generatedProvider) + ").get()";
+          return scopeFieldName(scope) + ".scope(null, " + guicify(statement) + ")";
         }
       }
 
@@ -216,12 +211,12 @@ public class Generators {
     return "scope_" + System.identityHashCode(scope);
   }
 
-  private static String getterCall(Key<?> key) {
-    return getterMethodName(key) + "()";
+  private static String providerCall(Key<?> key) {
+    return providerFieldName(key) + ".get()";
   }
 
-  private static String getterMethodName(Key<?> key) {
-    return "get" + uniqueNameFor(key);
+  private static String providerFieldName(Key<?> key) {
+    return "provider_" + uniqueNameFor(key);
   }
 
   private static String uniqueNameFor(Key<?> key) {
