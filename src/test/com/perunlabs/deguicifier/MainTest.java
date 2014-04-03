@@ -37,7 +37,7 @@ public class MainTest {
   }
 
   @Test
-  public void binds_boolean_instance() throws Exception {
+  public void prints_generated_source_to_system_out() throws Exception {
     given(module = new MyModule());
     when(main).main(MyModule.class.getName(), String.class.getName());
     thenReturned();
