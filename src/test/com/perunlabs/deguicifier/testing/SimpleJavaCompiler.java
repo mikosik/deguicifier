@@ -91,6 +91,7 @@ public class SimpleJavaCompiler {
   }
 
   private static void writeToFile(Path sourceFile, String sourceCode) throws IOException {
+    Files.createDirectories(sourceFile.getParent());
     Files.write(sourceFile, Arrays.asList(sourceCode), CHARSET);
   }
 

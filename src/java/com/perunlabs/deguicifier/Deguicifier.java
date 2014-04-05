@@ -28,7 +28,12 @@ public class Deguicifier {
   private static final Set<Key<?>> IGNORED_KEYS = immutableSet(Key.get(Injector.class), Key
       .get(Logger.class), Key.get(Stage.class));
 
-  public String deguicify(Module module, final Class<?> mainClass) {
+  public String deguicify(Module module, Class<?> mainClass) {
+    return deguicify(module, mainClass, FACTORY_CLASS_NAME);
+  }
+
+  public String deguicify(Module module, final Class<?> mainClass,
+      String generatedClassCanonicalName) {
     Injector injector = Guice.createInjector(module, new AbstractModule() {
       @Override
       protected void configure() {
@@ -38,10 +43,14 @@ public class Deguicifier {
 
     StringBuilder builder = new StringBuilder();
 
+    String packageName = packageName(generatedClassCanonicalName);
+    if (!packageName.isEmpty()) {
+      builder.append("package " + packageName + ";\n");
+    }
     builder.append("import " + Provider.class.getName() + ";\n");
     builder.append("@SuppressWarnings(\"all\")\n");
-    builder.append("public class " + FACTORY_CLASS_NAME + " implements javax.inject.Provider<"
-        + mainClass.getCanonicalName() + "> {\n");
+    builder.append("public class " + className(generatedClassCanonicalName)
+        + " implements javax.inject.Provider<" + mainClass.getCanonicalName() + "> {\n");
 
     builder.append(Generators.mainGetter(mainClass));
 
@@ -68,6 +77,24 @@ public class Deguicifier {
 
     builder.append("}\n");
     return builder.toString();
+  }
+
+  private String packageName(String classCanonicalName) {
+    int index = classCanonicalName.lastIndexOf('.');
+    if (index == -1) {
+      return "";
+    } else {
+      return classCanonicalName.substring(0, index);
+    }
+  }
+
+  private String className(String classCanonicalName) {
+    int index = classCanonicalName.lastIndexOf('.');
+    if (index == -1) {
+      return classCanonicalName;
+    } else {
+      return classCanonicalName.substring(index + 1);
+    }
   }
 
   @SafeVarargs
