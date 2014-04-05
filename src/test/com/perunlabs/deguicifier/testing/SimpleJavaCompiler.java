@@ -1,7 +1,5 @@
 package com.perunlabs.deguicifier.testing;
 
-import static com.perunlabs.deguicifier.Deguicifier.FACTORY_CLASS_NAME;
-
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -30,15 +28,49 @@ public class SimpleJavaCompiler {
     check(sourceCode != null);
     try {
       File tempDir = Files.createTempDirectory("deguicifier-test").toFile();
-      Path sourceFilePath = tempDir.toPath().resolve(FACTORY_CLASS_NAME + ".java");
+      String canonicalName = canonicalName(sourceCode);
+      String path = canonicalName.replace('.', '/') + ".java";
+      Path sourceFilePath = tempDir.toPath().resolve(path);
       writeToFile(sourceFilePath, sourceCode);
 
       String classPath = createClassPath(tempDir);
       compileAndFailOnErrors(tempDir, classPath, sourceFilePath.toFile());
-      return (Provider<?>) createInstanceLoadedFromFile(tempDir, FACTORY_CLASS_NAME);
+      return (Provider<?>) createInstanceLoadedFromFile(tempDir, canonicalName);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
+  }
+
+  private static String canonicalName(String sourceCode) {
+    String[] lines = sourceCode.split("\\r?\\n");
+    String packageName = packageName(lines);
+    String className = className(lines);
+    if (packageName.isEmpty()) {
+      return className;
+    } else {
+      return packageName + "." + className;
+    }
+  }
+
+  private static String packageName(String[] lines) {
+    String packageString = "package ";
+    for (String line : lines) {
+      if (line.startsWith(packageString)) {
+        return line.substring(packageString.length(), line.length() - 1);
+      }
+    }
+    return "";
+  }
+
+  private static String className(String[] lines) {
+    String prefixesString = "public class ";
+    for (String line : lines) {
+      if (line.startsWith(prefixesString)) {
+        String withouthPrefixes = line.substring(prefixesString.length());
+        return withouthPrefixes.substring(0, withouthPrefixes.indexOf(' '));
+      }
+    }
+    return "";
   }
 
   private static String createClassPath(File tempDir) {
