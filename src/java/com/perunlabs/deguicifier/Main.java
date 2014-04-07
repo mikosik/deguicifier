@@ -10,6 +10,7 @@ public class Main {
     }
     Module module = (Module) Class.forName(args[0]).newInstance();
     Class<?> mainClass = Class.forName(args[1]);
-    System.out.print(new Deguicifier().deguicify(module, mainClass, "MyFactory"));
+    String generatedClassCanonicalName = args[2];
+    System.out.print(new Deguicifier().deguicify(module, mainClass, generatedClassCanonicalName));
   }
 }
