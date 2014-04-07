@@ -32,7 +32,8 @@ public class ProviderInstanceBindingTest {
   @Test
   public void binds_provides_method_with_no_arguments() {
     given(module = new ProvidesWithoutArgumentsModule());
-    given(provider = compileProvider(deguicifier.deguicify(module, CharSequence.class)));
+    given(provider =
+        compileProvider(deguicifier.deguicify(module, CharSequence.class, "MyFactory")));
     when(provider.get());
     thenReturned(string);
   }
@@ -50,7 +51,8 @@ public class ProviderInstanceBindingTest {
   @Test
   public void binds_provides_method_with_arguments() {
     given(module = new ProvidesWithArgumentsModule());
-    given(provider = compileProvider(deguicifier.deguicify(module, CharSequence.class)));
+    given(provider =
+        compileProvider(deguicifier.deguicify(module, CharSequence.class, "MyFactory")));
     when(provider.get());
     thenReturned(string);
   }
@@ -79,7 +81,7 @@ public class ProviderInstanceBindingTest {
       }
     });
 
-    when(deguicifier).deguicify(module, CharSequence.class);
+    when(deguicifier).deguicify(module, CharSequence.class, "MyFactory");
     thenThrown(DeguicifierException.class);
   }
 
@@ -94,7 +96,7 @@ public class ProviderInstanceBindingTest {
         return string;
       }
     });
-    when(deguicifier).deguicify(module, String.class);
+    when(deguicifier).deguicify(module, String.class, "MyFactory");
     thenThrown(DeguicifierException.class);
   }
 
@@ -110,14 +112,14 @@ public class ProviderInstanceBindingTest {
       }
     }
     given(module = new MyModule());
-    when(deguicifier).deguicify(module, String.class);
+    when(deguicifier).deguicify(module, String.class, "MyFactory");
     thenThrown(DeguicifierException.class);
   }
 
   @Test
   public void module_must_have_default_constructor() {
     given(module = new ModuleWithoutDefaultConstructor(null));
-    when(deguicifier).deguicify(module, String.class);
+    when(deguicifier).deguicify(module, String.class, "MyFactory");
     thenThrown(DeguicifierException.class);
   }
 
@@ -136,7 +138,7 @@ public class ProviderInstanceBindingTest {
   @Test
   public void module_must_have_public_default_constructor() {
     given(module = new ModuleWithPrivateDefaultConstructor());
-    when(deguicifier).deguicify(module, String.class);
+    when(deguicifier).deguicify(module, String.class, "MyFactory");
     thenThrown(DeguicifierException.class);
   }
 

@@ -28,7 +28,8 @@ public class ConstructorBindingTest {
         bind(Implementation.class);
       }
     });
-    given(provider = compileProvider(deguicifier.deguicify(module, Implementation.class)));
+    given(provider =
+        compileProvider(deguicifier.deguicify(module, Implementation.class, "MyFactory")));
     when(provider.get());
     thenReturned(instanceOf(Implementation.class));
   }
@@ -44,7 +45,8 @@ public class ConstructorBindingTest {
         bind(ImplementationWithInject.class);
       }
     });
-    given(provider = compileProvider(deguicifier.deguicify(module, ImplementationWithInject.class)));
+    given(provider =
+        compileProvider(deguicifier.deguicify(module, ImplementationWithInject.class, "MyFactory")));
     when(provider.get());
     thenReturned(instanceOf(ImplementationWithInject.class));
   }
@@ -65,7 +67,8 @@ public class ConstructorBindingTest {
       }
     });
     given(provider =
-        compileProvider(deguicifier.deguicify(module, ImplementationWithInjectedValue.class)));
+        compileProvider(deguicifier.deguicify(module, ImplementationWithInjectedValue.class,
+            "MyFactory")));
     when(provider.get());
     thenReturned(instanceOf(ImplementationWithInjectedValue.class));
   }

@@ -28,7 +28,8 @@ public class NoScopeTest {
         bind(Implementation.class);
       }
     });
-    given(provider = compileProvider(deguicifier.deguicify(module, Implementation.class)));
+    given(provider =
+        compileProvider(deguicifier.deguicify(module, Implementation.class, "MyFactory")));
     when(provider.get());
     thenReturned(not(sameInstance(provider.get())));
   }

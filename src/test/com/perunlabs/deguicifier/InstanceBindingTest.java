@@ -50,7 +50,7 @@ public class InstanceBindingTest {
         bind(Boolean.class).toInstance(booleanValue);
       }
     });
-    given(provider = compileProvider(deguicifier.deguicify(module, Boolean.class)));
+    given(provider = compileProvider(deguicifier.deguicify(module, Boolean.class, "MyFactory")));
     when(provider.get());
     thenReturned(booleanValue);
   }
@@ -63,7 +63,7 @@ public class InstanceBindingTest {
         bind(Character.class).toInstance(characterValue);
       }
     });
-    given(provider = compileProvider(deguicifier.deguicify(module, Character.class)));
+    given(provider = compileProvider(deguicifier.deguicify(module, Character.class, "MyFactory")));
     when(provider.get());
     thenReturned(characterValue);
   }
@@ -76,7 +76,7 @@ public class InstanceBindingTest {
         bind(Byte.class).toInstance(byteValue);
       }
     });
-    given(provider = compileProvider(deguicifier.deguicify(module, Byte.class)));
+    given(provider = compileProvider(deguicifier.deguicify(module, Byte.class, "MyFactory")));
     when(provider.get());
     thenReturned(byteValue);
   }
@@ -89,7 +89,7 @@ public class InstanceBindingTest {
         bind(Short.class).toInstance(shortValue);
       }
     });
-    given(provider = compileProvider(deguicifier.deguicify(module, Short.class)));
+    given(provider = compileProvider(deguicifier.deguicify(module, Short.class, "MyFactory")));
     when(provider.get());
     thenReturned(shortValue);
   }
@@ -102,7 +102,7 @@ public class InstanceBindingTest {
         bind(Integer.class).toInstance(integerValue);
       }
     });
-    given(provider = compileProvider(deguicifier.deguicify(module, Integer.class)));
+    given(provider = compileProvider(deguicifier.deguicify(module, Integer.class, "MyFactory")));
     when(provider.get());
     thenReturned(integerValue);
   }
@@ -115,7 +115,7 @@ public class InstanceBindingTest {
         bind(Long.class).toInstance(longValue);
       }
     });
-    given(provider = compileProvider(deguicifier.deguicify(module, Long.class)));
+    given(provider = compileProvider(deguicifier.deguicify(module, Long.class, "MyFactory")));
     when(provider.get());
     thenReturned(longValue);
   }
@@ -128,7 +128,7 @@ public class InstanceBindingTest {
         bind(Float.class).toInstance(floatValue);
       }
     });
-    given(provider = compileProvider(deguicifier.deguicify(module, Float.class)));
+    given(provider = compileProvider(deguicifier.deguicify(module, Float.class, "MyFactory")));
     when(provider.get());
     thenReturned(floatValue);
   }
@@ -141,7 +141,7 @@ public class InstanceBindingTest {
         bind(Double.class).toInstance(doubleValue);
       }
     });
-    given(provider = compileProvider(deguicifier.deguicify(module, Double.class)));
+    given(provider = compileProvider(deguicifier.deguicify(module, Double.class, "MyFactory")));
     when(provider.get());
     thenReturned(doubleValue);
   }
@@ -154,7 +154,7 @@ public class InstanceBindingTest {
         bind(String.class).toInstance(stringValue);
       }
     });
-    given(provider = compileProvider(deguicifier.deguicify(module, String.class)));
+    given(provider = compileProvider(deguicifier.deguicify(module, String.class, "MyFactory")));
     when(provider.get());
     thenReturned(stringValue);
   }
@@ -168,7 +168,7 @@ public class InstanceBindingTest {
         bind(String.class).toInstance(stringValue);
       }
     });
-    given(provider = compileProvider(deguicifier.deguicify(module, String.class)));
+    given(provider = compileProvider(deguicifier.deguicify(module, String.class, "MyFactory")));
     when(provider.get());
     thenReturned(stringValue);
   }
@@ -182,7 +182,7 @@ public class InstanceBindingTest {
       }
     });
 
-    when(deguicifier).deguicify(module, Implementation.class);
+    when(deguicifier).deguicify(module, Implementation.class, "MyFactory");
     thenThrown(DeguicifierException.class);
   }
 

@@ -24,7 +24,7 @@ public class MainClassBindingTest {
       @Override
       protected void configure() {}
     });
-    given(provider = compileProvider(deguicifier.deguicify(module, Object.class)));
+    given(provider = compileProvider(deguicifier.deguicify(module, Object.class, "MyFactory")));
     when(provider.get());
     thenReturned();
   }

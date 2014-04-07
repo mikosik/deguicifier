@@ -27,7 +27,7 @@ public class LinkedKeyBindingTest {
         bind(Interface.class).to(Implementation.class);
       }
     });
-    given(provider = compileProvider(deguicifier.deguicify(module, Interface.class)));
+    given(provider = compileProvider(deguicifier.deguicify(module, Interface.class, "MyFactory")));
     when(provider.get());
     thenReturned(instanceOf(Implementation.class));
   }

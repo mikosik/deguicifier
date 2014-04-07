@@ -24,13 +24,8 @@ import com.google.inject.Stage;
 import com.google.inject.spi.DefaultBindingScopingVisitor;
 
 public class Deguicifier {
-  public static final String FACTORY_CLASS_NAME = "GeneratedFactory";
   private static final Set<Key<?>> IGNORED_KEYS = immutableSet(Key.get(Injector.class), Key
       .get(Logger.class), Key.get(Stage.class));
-
-  public String deguicify(Module module, Class<?> mainClass) {
-    return deguicify(module, mainClass, FACTORY_CLASS_NAME);
-  }
 
   public String deguicify(Module module, final Class<?> mainClass,
       String generatedClassCanonicalName) {

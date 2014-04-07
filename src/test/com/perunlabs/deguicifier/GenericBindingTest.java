@@ -31,7 +31,7 @@ public class GenericBindingTest {
         bind(new TypeLiteral<Holder<String>>() {}).to(StringHolder.class);
       }
     });
-    given(provider = compileProvider(deguicifier.deguicify(module, Wrapper.class)));
+    given(provider = compileProvider(deguicifier.deguicify(module, Wrapper.class, "MyFactory")));
     when(((Wrapper) provider.get()).heldValue.get());
     thenReturned(string);
   }
@@ -55,7 +55,8 @@ public class GenericBindingTest {
         bind(new TypeLiteral<Holder<Integer>>() {}).to(IntegerHolder.class);
       }
     });
-    given(provider = compileProvider(deguicifier.deguicify(module, DoubleWrapper.class)));
+    given(provider =
+        compileProvider(deguicifier.deguicify(module, DoubleWrapper.class, "MyFactory")));
     when(((DoubleWrapper) provider.get()).heldValue.get());
     thenReturned(string);
   }

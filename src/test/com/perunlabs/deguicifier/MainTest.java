@@ -41,7 +41,7 @@ public class MainTest {
     given(module = new MyModule());
     when(main).main(MyModule.class.getName(), String.class.getName());
     thenReturned();
-    thenEqual(outContent.toString(), deguicifier.deguicify(module, String.class));
+    thenEqual(outContent.toString(), deguicifier.deguicify(module, String.class, "MyFactory"));
   }
 
   @Test

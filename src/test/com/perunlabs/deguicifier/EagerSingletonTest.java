@@ -22,7 +22,7 @@ public class EagerSingletonTest {
         bind(Object.class).asEagerSingleton();
       }
     });
-    when(deguicifier).deguicify(module, Object.class);
+    when(deguicifier).deguicify(module, Object.class, "MyFactory");
     thenThrown(DeguicifierException.class);
   }
 }

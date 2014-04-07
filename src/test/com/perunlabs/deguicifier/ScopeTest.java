@@ -53,7 +53,7 @@ public class ScopeTest {
         bind(Object.class).in(MyScopeAnnotation.class);
       }
     });
-    given(provider = compileProvider(deguicifier.deguicify(module, Object.class)));
+    given(provider = compileProvider(deguicifier.deguicify(module, Object.class, "MyFactory")));
     when(provider.get());
     thenReturned(instanceOf(ScopableObject.class));
   }
@@ -71,7 +71,7 @@ public class ScopeTest {
     });
     given(scopedProvider =
         (Provider<ScopableObject>) compileProvider(deguicifier.deguicify(module,
-            ScopableObject.class)));
+            ScopableObject.class, "MyFactory")));
     when(scopedProvider.get().scopedBy);
     thenReturned(sameInstance(scopedProvider.get().scopedBy));
   }
@@ -88,7 +88,7 @@ public class ScopeTest {
             new MyScope());
       }
     });
-    given(provider = compileProvider(deguicifier.deguicify(module, MainAB.class)));
+    given(provider = compileProvider(deguicifier.deguicify(module, MainAB.class, "MyFactory")));
     given(main = (MainAB) provider.get());
     when(main.injected.get(0).scopedBy);
     thenReturned(not(sameInstance(main.injected.get(1).scopedBy)));

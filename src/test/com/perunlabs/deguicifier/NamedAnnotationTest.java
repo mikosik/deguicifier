@@ -43,7 +43,7 @@ public class NamedAnnotationTest {
         bind(Interface.class).annotatedWith(named(nameA)).to(ImplementationA.class);
       }
     });
-    given(provider = compileProvider(deguicifier.deguicify(module, MainA.class)));
+    given(provider = compileProvider(deguicifier.deguicify(module, MainA.class, "MyFactory")));
     when(((MainA) provider.get()).injected);
     thenReturned(instanceOf(ImplementationA.class));
   }
@@ -68,7 +68,7 @@ public class NamedAnnotationTest {
         bind(Interface.class).annotatedWith(named(nameB)).to(ImplementationB.class);
       }
     });
-    given(provider = compileProvider(deguicifier.deguicify(module, MainAB.class)));
+    given(provider = compileProvider(deguicifier.deguicify(module, MainAB.class, "MyFactory")));
     when(((MainAB) provider.get()).injected);
     thenReturned(containsInAnyOrder(instanceOf(ImplementationA.class),
         instanceOf(ImplementationB.class)));

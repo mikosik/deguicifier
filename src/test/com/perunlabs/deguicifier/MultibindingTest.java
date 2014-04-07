@@ -35,7 +35,7 @@ public class MultibindingTest {
         newSetBinder(binder(), Interface.class);
       }
     });
-    given(provider = compileProvider(deguicifier.deguicify(module, MainClass.class)));
+    given(provider = compileProvider(deguicifier.deguicify(module, MainClass.class, "MyFactory")));
     when(((MainClass) provider.get()).injectedSet);
     thenReturned(empty());
   }
@@ -50,7 +50,7 @@ public class MultibindingTest {
         multibinder.addBinding().to(ImplementationA.class);
       }
     });
-    given(provider = compileProvider(deguicifier.deguicify(module, MainClass.class)));
+    given(provider = compileProvider(deguicifier.deguicify(module, MainClass.class, "MyFactory")));
     when(((MainClass) provider.get()).injectedSet);
     thenReturned(contains(instanceOf(ImplementationA.class)));
   }
@@ -67,7 +67,7 @@ public class MultibindingTest {
         multibinder.addBinding().to(ImplementationB.class);
       }
     });
-    String s = deguicifier.deguicify(module, MainClass.class);
+    String s = deguicifier.deguicify(module, MainClass.class, "MyFactory");
     given(provider = compileProvider(s));
     when(((MainClass) provider.get()).injectedSet);
     thenReturned(containsInAnyOrder(instanceOf(ImplementationA.class),

@@ -34,7 +34,7 @@ public class SingletonTest {
         bind(Object.class).in(Singleton.class);
       }
     });
-    given(provider = compileProvider(deguicifier.deguicify(module, Object.class)));
+    given(provider = compileProvider(deguicifier.deguicify(module, Object.class, "MyFactory")));
     when(provider.get());
     thenReturned(sameInstance(provider.get()));
   }
@@ -49,7 +49,7 @@ public class SingletonTest {
         bind(InterfaceB.class).to(Implementation.class).in(Singleton.class);
       }
     });
-    given(provider = compileProvider(deguicifier.deguicify(module, MainClass.class)));
+    given(provider = compileProvider(deguicifier.deguicify(module, MainClass.class, "MyFactory")));
     when(((MainClass) provider.get()).injected);
     thenReturned(hasSize(2));
   }
@@ -65,7 +65,7 @@ public class SingletonTest {
         bind(Implementation.class).in(Singleton.class);
       }
     });
-    given(provider = compileProvider(deguicifier.deguicify(module, MainClass.class)));
+    given(provider = compileProvider(deguicifier.deguicify(module, MainClass.class, "MyFactory")));
     when(((MainClass) provider.get()).injected);
     thenReturned(hasSize(1));
   }

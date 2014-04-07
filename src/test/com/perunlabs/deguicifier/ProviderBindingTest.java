@@ -30,7 +30,7 @@ public class ProviderBindingTest {
         bind(Injectable.class);
       }
     });
-    given(provider = compileProvider(deguicifier.deguicify(module, Injectable.class)));
+    given(provider = compileProvider(deguicifier.deguicify(module, Injectable.class, "MyFactory")));
     when(((Injectable) provider.get()).injectedProvider.get());
     thenReturned(instanceOf(Implementation.class));
   }
@@ -55,7 +55,7 @@ public class ProviderBindingTest {
         bind(GoogleInjectable.class);
       }
     });
-    when($compileProvider(deguicifier.deguicify(module, GoogleInjectable.class)));
+    when($compileProvider(deguicifier.deguicify(module, GoogleInjectable.class, "MyFactory")));
     thenThrown(RuntimeException.class);
   }
 
