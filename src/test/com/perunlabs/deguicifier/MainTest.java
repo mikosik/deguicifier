@@ -20,6 +20,7 @@ public class MainTest {
   private Deguicifier deguicifier;
   private Module module;
   private final MainWrapper main = new MainWrapper();
+  private final String className = "MyFactory";
 
   private PrintStream outBefore;
   private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
@@ -39,22 +40,23 @@ public class MainTest {
   @Test
   public void prints_generated_source_to_system_out() throws Exception {
     given(module = new MyModule());
-    when(main).main(MyModule.class.getName(), String.class.getName());
+    when(main).main(MyModule.class.getName(), String.class.getName(), className);
     thenReturned();
-    thenEqual(outContent.toString(), deguicifier.deguicify(module, String.class, "MyFactory"));
+    thenEqual(outContent.toString(), deguicifier.deguicify(module, String.class, className));
   }
 
   @Test
   public void too_few_arguments_causes_exception() throws Exception {
     given(module = new MyModule());
-    when(main).main(MyModule.class.getName());
+    when(main).main(MyModule.class.getName(), String.class.getName());
     thenThrown(RuntimeException.class);
   }
 
   @Test
   public void too_many_arguments_causes_exception() throws Exception {
     given(module = new MyModule());
-    when(main).main(MyModule.class.getName(), String.class.getName(), "third arg");
+    when(main).main(MyModule.class.getName(), String.class.getName(), "com.company.MyClass",
+        "extra-argument");
     thenThrown(RuntimeException.class);
   }
 
