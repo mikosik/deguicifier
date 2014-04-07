@@ -43,20 +43,14 @@ public class SimpleJavaCompiler {
 
   private static String canonicalName(String sourceCode) {
     String[] lines = sourceCode.split("\\r?\\n");
-    String packageName = packageName(lines);
-    String className = className(lines);
-    if (packageName.isEmpty()) {
-      return className;
-    } else {
-      return packageName + "." + className;
-    }
+    return namespace(lines) + className(lines);
   }
 
-  private static String packageName(String[] lines) {
+  private static String namespace(String[] lines) {
     String packageString = "package ";
     for (String line : lines) {
       if (line.startsWith(packageString)) {
-        return line.substring(packageString.length(), line.length() - 1);
+        return line.substring(packageString.length(), line.length() - 1) + ".";
       }
     }
     return "";
