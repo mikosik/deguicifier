@@ -156,7 +156,7 @@ public class Generators {
     StringBuilder builder = new StringBuilder();
     builder.append("new " + "Provider<" + canonical + ">" + "() {\n");
     builder.append("  public " + canonical + " get() {\n");
-    builder.append("    return " + statement + "\n;");
+    builder.append("    return " + statement + ";\n");
     builder.append("  }\n");
     builder.append("}");
     return builder.toString();
