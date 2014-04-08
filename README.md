@@ -12,10 +12,13 @@ Suppose we have java application that is bootstrapped using guice as shown below
 ```java
 import my.app.Module;
 import my.app.App;
+import com.google.inject.Injector;
 
 public class Main {
   public static void main(String[] args) {
-    Guice.createInjector(new Module()).getInstance(App.class).start();
+    Injector injector = Guice.createInjector(new Module());
+    App app = injector.getInstance(App.class);
+    app.start();
   }
 }
 ```
@@ -36,9 +39,15 @@ This will generate AppFactory java class.
 You can use it to bootstrap your app without guice:
 
 ```java
+import my.app.App;
+import my.app.AppFactory;
+import javax.inject.Provider;
+
 public class Main {
   public static void main(String[] args) {
-    new my.app.AppFactory().get().start();
+    Provider<App> appProvider = new AppFactory();
+    App app = appProvider.get();
+    app.start();
   }
 }
 ```
