@@ -1,7 +1,8 @@
 deguicifier
 ===========
 
-Tool for converting guice modules into plain old java factories (similar to those you would write by hand).
+Tool for converting guice modules into plain old java factories.  
+(similar to those you would write by hand).
 
 Usage example
 -------------
@@ -23,7 +24,7 @@ We can use deguicifier to generate wiring code so we could bootstrap our app wit
 To generate mentioned code run:
 
 ```sh
-java -cp deguicifier-0.1.0.jar:guice-3.0.jar:javax.inject.jar:app.jar \
+java -cp deguicifier-0.2.0.jar:guice-3.0.jar:javax.inject.jar:app.jar \
   com.perunlabs.deguicifier.Main \
   my.app.Module \
   my.app.App \
