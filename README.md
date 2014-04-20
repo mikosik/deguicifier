@@ -10,13 +10,13 @@ Usage example
 Suppose we have java application that is bootstrapped using guice as shown below:
 
 ```java
-import my.app.Module;
+import my.app.AppModule;
 import my.app.App;
 import com.google.inject.Injector;
 
 public class Main {
   public static void main(String[] args) {
-    Injector injector = Guice.createInjector(new Module());
+    Injector injector = Guice.createInjector(new AppModule());
     App app = injector.getInstance(App.class);
     app.start();
   }
