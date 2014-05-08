@@ -29,7 +29,7 @@ To generate mentioned code run:
 ```sh
 java -cp deguicifier-0.2.0.jar:guice-3.0.jar:javax.inject.jar:app.jar \
   com.perunlabs.deguicifier.Main \
-  my.app.Module \
+  my.app.AppModule \
   my.app.App \
   my.app.AppFactory \
   >> my/app/AppFactory.java
