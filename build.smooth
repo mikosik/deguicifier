@@ -4,14 +4,14 @@
 # It can be downloaded for free from http://www.smooth-build.org/
 #
 
-guice.jar:                file("lib/guice-3.0-no_aop.jar");
-guice-multibindings.jar:  file("lib/guice-multibindings-3.0.jar");
-hamcrest-all.jar:         file("lib/hamcrest-all-1.3.jar");
-javax.inject.jar:         file("lib/javax.inject.jar");
-junit.jar:                file("lib/junit-4.11.jar");
-testory.jar:              file("lib/testory-0.13.0.jar");
+guice.jar:                file("//lib/guice-3.0-no_aop.jar");
+guice-multibindings.jar:  file("//lib/guice-multibindings-3.0.jar");
+hamcrest-all.jar:         file("//lib/hamcrest-all-1.3.jar");
+javax.inject.jar:         file("//lib/javax.inject.jar");
+junit.jar:                file("//lib/junit-4.11.jar");
+testory.jar:              file("//lib/testory-0.13.0.jar");
 
-sourceFiles: files("src/java");
+sourceFiles: files("//src/java");
 
 dep-jars: [
   guice.jar,
@@ -22,7 +22,7 @@ dep-jars: [
 deguicifier.jar:
   sourceFiles |
   javac(libs=dep-jars) |
-  concatenateFiles(with=sourceFiles) |
+  concatenateFileArrays(with=sourceFiles) |
   jar ;
 
 
@@ -36,14 +36,14 @@ deguicifier.jar:
 #   testory.jar,
 # ];
 # 
-# junit-dep-jars: concatenateBlobs(dep-jars, with=testing-jars);
+# junit-dep-jars: concatenateBlobArrays(dep-jars, with=testing-jars);
 # 
 # test.jar:
-#   files("src/test") |
+#   files("//src/test") |
 #   javac(libs=junit-dep-jars) |
 #   jar ;
 # 
 # test:
-#   concatenateBlobs([ test.jar ], with=junit-dep-jars) |
+#   concatenateBlobArrays([ test.jar ], with=junit-dep-jars) |
 #   junit(include="**/*Test.class");
 
