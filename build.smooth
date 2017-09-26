@@ -4,22 +4,22 @@
 # It can be downloaded for free from http://www.smooth-build.org/
 #
 
-guice.jar:                file("//lib/guice-3.0-no_aop.jar");
-guice-multibindings.jar:  file("//lib/guice-multibindings-3.0.jar");
-hamcrest-all.jar:         file("//lib/hamcrest-all-1.3.jar");
-javax.inject.jar:         file("//lib/javax.inject.jar");
-junit.jar:                file("//lib/junit-4.11.jar");
-testory.jar:              file("//lib/testory-0.13.0.jar");
+guice.jar =                file("//lib/guice-3.0-no_aop.jar");
+guice-multibindings.jar =  file("//lib/guice-multibindings-3.0.jar");
+hamcrest-all.jar =         file("//lib/hamcrest-all-1.3.jar");
+javax.inject.jar =         file("//lib/javax.inject.jar");
+junit.jar =                file("//lib/junit-4.11.jar");
+testory.jar =              file("//lib/testory-0.13.0.jar");
 
-sourceFiles: files("//src/java");
+sourceFiles = files("//src/java");
 
-dep-jars: [
+dep-jars = [
   guice.jar,
   guice-multibindings.jar,
   javax.inject.jar,
 ];
 
-deguicifier.jar:
+deguicifier.jar =
   sourceFiles |
   javac(libs=dep-jars) |
   concatenateFileArrays(with=sourceFiles) |
@@ -29,21 +29,21 @@ deguicifier.jar:
 # junit tests cannot be run via smooth as they use hacky way
 # to pass classpath to java compiler
 #
-# testing-jars: [
+# testing-jars = [
 #   deguicifier.jar,
 #   hamcrest-all.jar,
 #   junit.jar,
 #   testory.jar,
 # ];
-# 
-# junit-dep-jars: concatenateBlobArrays(dep-jars, with=testing-jars);
-# 
-# test.jar:
+#
+# junit-dep-jars = concatenateBlobArrays(dep-jars, with=testing-jars);
+#
+# test.jar =
 #   files("//src/test") |
 #   javac(libs=junit-dep-jars) |
 #   jar ;
-# 
-# test:
+#
+# test =
 #   concatenateBlobArrays([ test.jar ], with=junit-dep-jars) |
 #   junit(include="**/*Test.class");
 
