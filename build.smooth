@@ -21,7 +21,7 @@ dep_jars = [
 
 deguicifier_jar =
   javac(
-    sources = sourceFiles,
+    srcs = sourceFiles,
     libs = dep_jars,
   ) |
   concatenateFileArrays(with = sourceFiles) |
