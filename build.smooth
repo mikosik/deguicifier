@@ -1,7 +1,7 @@
 #
 # This is build script for deguicifier project.
 # You need smooth-build tool to use it.
-# It can be downloaded for free from http://www.smooth-build.org/
+# It can be downloaded for free from http://www.smoothbuild.org/
 #
 
 guice_jar =                aFile("lib/guice-3.0-no_aop.jar");
