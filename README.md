@@ -1,3 +1,13 @@
+
+__This project is abandoned.__
+
+__It was meant to workaround Guice problems on Android devices while still being able to use Guice in code.__
+
+__Nowadays one should simply use Dagger.__
+
+
+
+
 deguicifier
 ===========
 
