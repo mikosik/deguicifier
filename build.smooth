@@ -4,14 +4,14 @@
 # It can be downloaded for free from http://www.smoothbuild.org/
 #
 
-guice_jar =                projectFile("lib/guice-3.0-no_aop.jar");
-guice_multibindings_jar =  projectFile("lib/guice-multibindings-3.0.jar");
-hamcrest_all_jar =         projectFile("lib/hamcrest-all-1.3.jar");
-javax_inject_jar =         projectFile("lib/javax.inject.jar");
-junit_jar =                projectFile("lib/junit-4.11.jar");
-testory_jar =              projectFile("lib/testory-0.13.0.jar");
+guice_jar =                file("lib/guice-3.0-no_aop.jar");
+guice_multibindings_jar =  file("lib/guice-multibindings-3.0.jar");
+hamcrest_all_jar =         file("lib/hamcrest-all-1.3.jar");
+javax_inject_jar =         file("lib/javax.inject.jar");
+junit_jar =                file("lib/junit-4.11.jar");
+testory_jar =              file("lib/testory-0.13.0.jar");
 
-sourceFiles = projectFiles("src/java");
+sourceFiles = files("src/java");
 
 dep_jars = [
   guice_jar,
@@ -23,7 +23,7 @@ deguicifier_classes = javac(
   srcs = sourceFiles,
   libs = dep_jars,
 );
-deguicifier_jar = concat([deguicifier_classes, sourceFiles]) | jar();
+deguicifier_jar = concat([deguicifier_classes, sourceFiles]) > jar();
 
 # junit tests cannot be run via smooth as they use hacky way
 # to pass classpath to java compiler
